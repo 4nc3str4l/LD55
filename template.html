@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ludum dare 55</title>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <script>
+    // This is a hack to make sure that the canvas is loaded before the game.js script is executed
+    var Module = {
+        canvas: document.getElementById('canvas') // Make sure that emscripten uses the correct canvas
+    };
+    </script>
+    <script src="game.js"></script>
+</body>
+</html>
