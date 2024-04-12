@@ -38,6 +38,12 @@ native: $(TARGET_NATIVE)
 $(TARGET_NATIVE): $(SOURCES)
 	$(CC) -o $(TARGET_NATIVE) $(SOURCES) $(CFLAGS)
 
+# Watch command
+watch:
+	@while inotifywait -e close_write $(SRC_DIR); do \
+		make web; \
+	done
+
 # clean command
 clean:
 	rm -f $(DIST_DIR)/*

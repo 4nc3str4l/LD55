@@ -31,7 +31,7 @@ int main(void)
         if (rec.x >= (screenWidth - rec.width) || rec.x <= 0) velocity.x *= -1.0f;
         if (rec.y >= (screenHeight - rec.height) || rec.y <= 0) velocity.y *= -1.0f;
 
-        DrawRectangleRec(rec, YELLOW);
+        DrawRectangleRec(rec, RED);
 
         if (CheckCollisionPointRec(GetMousePosition(), button))
         {
