@@ -18,31 +18,22 @@ int main()
 
     SetTargetFPS(60);
 
+    World world = LoadWorld("resources/worlds/level_1_ground.csv", "resources/worlds/level_1_monsters.csv");
+
     while (!WindowShouldClose())
     {
+        float deltaTime = GetFrameTime();
         BeginDrawing();
         ClearBackground(GRAY);
 
-        for(int y = 0; y < WORLD_HEIGHT; y++)
-        {
-            for(int x = 0; x < WORLD_WIDTH; x++)
-            {
-                auto color = dry_color;
-                if (y % 2 == 0)
-                {
-                    color = grass_color;
-                }
-                else
-                {
-                    color = snow_color;
-                }
-                DrawRectangle(x * 32, y * 32, 32, 32, color);
-            }
-        }
+        UpdateWorld(world, deltaTime);
+        RenderWorld(world);
+        DrawTexture(basicElementalTexture,
+                    world.player.position.x,
+                    world.player.position.y,
+                    GREEN);
 
-        DrawTexture(basicElementalTexture, 0, 0, GREEN);
-
-        DrawText("Ludum Dare 55", 10, 10, 20, DARKGRAY);
+        DrawText(TITLE, 10, 10, 20, DARKGRAY);
 
         EndDrawing();
     }

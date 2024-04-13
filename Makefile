@@ -12,13 +12,13 @@ HEADERS=$(SRC_DIR)/world.h
 LIBS=-I$(RAYLIB_DIR) -L$(RAYLIB_DIR) -lraylib
 
 # Native Options
-CC=gcc
+CC=g++  # Cambiado de gcc a g++
 CFLAGS=-Wall -I$(RAYLIB_DIR) -L. -lraylib -lm -lGL -lpthread -ldl -lrt -lX11
 TARGET_NATIVE=$(DIST_DIR)/ludum_dare_55
 
 # Emscripten Options
 EMCC=emcc
-EMFLAGS=-s USE_GLFW=3 -s ASYNCIFY -s TOTAL_MEMORY=67108864 -s ALLOW_MEMORY_GROWTH=1 -s FORCE_FILESYSTEM=1 -s ASSERTIONS=1
+EMFLAGS=-s USE_GLFW=3 -s ASYNCIFY -s TOTAL_MEMORY=67108864 -s ALLOW_MEMORY_GROWTH=1 -s FORCE_FILESYSTEM=1 -s ASSERTIONS=1 --preload-file resources@/
 TARGET_WEB=$(DIST_DIR)/game.js
 
 .PHONY: all web native clean
