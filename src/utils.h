@@ -22,9 +22,3 @@ Vector2 GetRandomVector(float minX, float minY, float maxX, float maxY) {
     std::uniform_real_distribution<float> distY(minY, maxY);
     return Vector2{distX(mt), distY(mt)};
 }
-
-inline float Clamp(float value, float min, float max) {
-    if (value < min) return min;
-    if (value > max) return max;
-    return value;
-}

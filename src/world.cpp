@@ -5,6 +5,8 @@
 #include <iostream>
 #include <cmath>
 #include "raymath.h"
+#include <algorithm>
+#include "utils.h"
 
 inline const auto player_texture_path = "resources/player.png";
 inline const auto ground_texture_path = "resources/ground.png";
@@ -104,11 +106,20 @@ World LoadWorld(const std::string &worldPath, const std::string &entitiesPath)
             }
             else if (entity == 2)
             {
-                world.elementals[y * WORLD_WIDTH + x] = Elemental{position, ElemetalType::Fire};
+                auto elemental = Elemental{position, ElemetalType::Fire};
+                elemental.movementRadius = 1;
+                elemental.timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES;
+                elemental.ChoosenPosition = position;
+                world.elementals[y * WORLD_WIDTH + x] = elemental;
+
             }
             else if (entity == 3)
             {
-                world.elementals[y * WORLD_WIDTH + x] = Elemental{position, ElemetalType::Ice};
+                auto elemental = Elemental{position, ElemetalType::Ice};
+                elemental.movementRadius = 1;
+                elemental.timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES;
+                elemental.ChoosenPosition = position;
+                world.elementals[y * WORLD_WIDTH + x] = elemental;
             }
         }
     }
@@ -256,10 +267,40 @@ void UpdateCamera(World *world, float deltaTime)
     world->camera.zoom = 1.0f;
 }
 
+void UpdateElementals(World& world, float deltaTime) {
+    for (auto& elemental : world.elementals) {
+        if (elemental.type == ElemetalType::None) continue;
+
+        Vector2 direction = Vector2Subtract(elemental.ChoosenPosition, elemental.position);
+        float distance = Vector2Length(direction);
+
+        if (distance > 0) {
+            Vector2 movement = Vector2Scale(Vector2Normalize(direction), std::min(elemental.speed * deltaTime, distance));
+            elemental.position = Vector2Add(elemental.position, movement);
+        }
+
+        if (distance < elemental.speed * deltaTime) {
+
+            float minX = std::max(0.0f, elemental.position.x - elemental.movementRadius * TILE_SIZE);
+            float maxX = std::min((WORLD_WIDTH - 1) * TILE_SIZE, elemental.position.x + elemental.movementRadius * TILE_SIZE);
+            float minY = std::max(0.0f, elemental.position.y - elemental.movementRadius * TILE_SIZE);
+            float maxY = std::min((WORLD_HEIGHT - 1) * TILE_SIZE, elemental.position.y + elemental.movementRadius * TILE_SIZE);
+
+            elemental.ChoosenPosition = GetRandomVector(minX, minY, maxX, maxY);
+
+            if (--elemental.timesUntilMovementIncrease <= 0) {
+                elemental.timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES;
+                elemental.movementRadius++;
+            }
+        }
+    }
+}
+
 void UpdateWorld(World &world, float deltaTime)
 {
     UpdatePlayer(world, deltaTime);
     UpdateWorldState(world, deltaTime);
+    UpdateElementals(world, deltaTime);
     UpdateTileStates(world, deltaTime);
     UpdateCamera(&world, deltaTime);
 }

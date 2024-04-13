@@ -21,6 +21,8 @@ inline auto snow_range = Vector2{0.7f, 1.0f};
 
 std::vector<std::vector<int>> LoadDataMatrix(const std::string& path, int width, int height);
 
+inline constexpr int TIMES_INTIL_MOVEMENT_RADIUS_INCRESES = 4;
+
 enum class ElemetalType {
     None = 0,
     Fire = 1,
@@ -52,6 +54,10 @@ struct Player {
 struct Elemental {
     Vector2 position;
     ElemetalType type;
+    int movementRadius = 1;
+    float speed = 50.0f;
+    int timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES;
+    Vector2 ChoosenPosition = {0, 0};
 };
 
 struct World {
