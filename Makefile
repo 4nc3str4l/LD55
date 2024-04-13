@@ -4,7 +4,11 @@ DIST_DIR=dist
 RAYLIB_DIR=./dependencies/raylib/src
 
 # Sources
-SOURCES=$(SRC_DIR)/main.cpp
+SOURCES=$(SRC_DIR)/main.cpp $(SRC_DIR)/world.cpp
+
+# Header files
+HEADERS=$(SRC_DIR)/world.h
+
 LIBS=-I$(RAYLIB_DIR) -L$(RAYLIB_DIR) -lraylib
 
 # Native Options
@@ -28,14 +32,14 @@ $(shell mkdir -p $(DIST_DIR))
 # Web target
 web: $(TARGET_WEB)
 
-$(TARGET_WEB): $(SOURCES)
+$(TARGET_WEB): $(SOURCES) $(HEADERS)
 	$(EMCC) $(SOURCES) -o $(TARGET_WEB) $(EMFLAGS) --preload-file resources $(LIBS)
 	cp template.html $(DIST_DIR)/index.html
 
 # native target
 native: $(TARGET_NATIVE)
 
-$(TARGET_NATIVE): $(SOURCES)
+$(TARGET_NATIVE): $(SOURCES) $(HEADERS)
 	$(CC) -o $(TARGET_NATIVE) $(SOURCES) $(CFLAGS)
 
 # Watch command
