@@ -10,15 +10,12 @@ int main()
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE);
     InitAudioDevice();
 
-    Image image = LoadImage("resources/BasicElemental.png");
-    Texture2D basicElementalTexture = LoadTextureFromImage(image);
-    UnloadImage(image);
-
     Sound sound = LoadSound("resources/random.wav");
 
     SetTargetFPS(60);
 
-    World world = LoadWorld("resources/worlds/level_1_ground.csv", "resources/worlds/level_1_monsters.csv");
+    World world = LoadWorld("resources/worlds/level_1_ground.csv",
+                    "resources/worlds/level_1_entities.csv");
 
     while (!WindowShouldClose())
     {
@@ -28,10 +25,6 @@ int main()
 
         UpdateWorld(world, deltaTime);
         RenderWorld(world);
-        DrawTexture(basicElementalTexture,
-                    world.player.position.x,
-                    world.player.position.y,
-                    GREEN);
 
         DrawText(TITLE, 10, 10, 20, DARKGRAY);
 
@@ -44,3 +37,4 @@ int main()
 
     return 0;
 }
+

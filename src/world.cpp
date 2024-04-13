@@ -5,6 +5,9 @@
 #include <iostream>
 #include <cmath>
 
+inline const auto player_texture_path = "resources/player.png";
+inline const auto ground_texture_path = "resources/ground.png";
+
 std::vector<std::vector<int>> LoadDataMatrix(const std::string& path, int width, int height)
 {
     std::vector<std::vector<int>> matrix(height, std::vector<int>(width, 0));
@@ -44,11 +47,22 @@ std::vector<std::vector<int>> LoadDataMatrix(const std::string& path, int width,
     return matrix;
 }
 
+Texture2D GetTextureFromPath(const std::string& path)
+{
+    Image image = LoadImage(path.c_str());
+    auto texture = LoadTextureFromImage(image);
+    UnloadImage(image);
+    return texture;
+}
+
 World LoadWorld(const std::string &worldPath, const std::string &entitiesPath)
 {
     World world;
     auto data = LoadDataMatrix(worldPath, WORLD_WIDTH, WORLD_HEIGHT);
     auto entities = LoadDataMatrix(entitiesPath, WORLD_WIDTH, WORLD_HEIGHT);
+
+    world.playerTexture = GetTextureFromPath(player_texture_path);
+    world.groundTexture = GetTextureFromPath(ground_texture_path);
 
     for (int y = 0; y < WORLD_HEIGHT; y++)
     {
@@ -60,15 +74,23 @@ World LoadWorld(const std::string &worldPath, const std::string &entitiesPath)
             {
             case 0:
                 world.tiles[x][y] = dry_color;
+                world.tileTypes[x][y] = TileType::Dry;
+                world.tileStates[x][y] = 0.0f;
                 break;
             case 1:
                 world.tiles[x][y] = grass_color;
+                world.tileTypes[x][y] = TileType::Grass;
+                world.tileStates[x][y] = 0.5f;
                 break;
             case 2:
                 world.tiles[x][y] = snow_color;
+                world.tileTypes[x][y] = TileType::Grass;
+                world.tileStates[x][y] = 1.0f;
                 break;
             default:
                 world.tiles[x][y] = RED;
+                world.tileTypes[x][y] = TileType::None;
+                world.tileStates[x][y] = 0.0f;
                 break;
             }
 
@@ -98,7 +120,7 @@ void RenderWorld(const World &world)
     {
         for (int x = 0; x < WORLD_WIDTH; x++)
         {
-            DrawRectangle(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, world.tiles[x][y]);
+            DrawTexture(world.groundTexture, x * TILE_SIZE, y * TILE_SIZE, world.tiles[x][y]);
         }
     }
 
@@ -114,9 +136,15 @@ void RenderWorld(const World &world)
             DrawRectangle(elemental.position.x - HALF_TILE_SIZE, elemental.position.y - HALF_TILE_SIZE, TILE_SIZE, TILE_SIZE, BLUE);
         }
     }
+
+    DrawTexture(world.playerTexture,
+            world.player.position.x,
+            world.player.position.y,
+            GREEN);
+
 }
 
-void UpdateWorld(World &world, float deltaTime)
+void UpdatePlayer(World &world, float deltaTime)
 {
     float directionX = 0.0f;
     float directionY = 0.0f;
@@ -143,4 +171,14 @@ void UpdateWorld(World &world, float deltaTime)
     float movementSpeed = world.player.speed * deltaTime;
     world.player.position.x += directionX * movementSpeed;
     world.player.position.y += directionY * movementSpeed;
+}
+
+void UpdateWorld(World &world, float deltaTime)
+{
+    UpdatePlayer(world, deltaTime);
+}
+
+Vector2 GetTilePosition(const Vector2& position)
+{
+    return Vector2{std::floor(position.x / TILE_SIZE), std::floor(position.y / TILE_SIZE)};
 }
