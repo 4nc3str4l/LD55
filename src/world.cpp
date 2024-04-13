@@ -121,11 +121,11 @@ std::vector<TutorialText> LoadTutorialText(const std::string& path) {
 }
 
 
-World LoadWorld(const std::string &worldPath,
+World* LoadWorld(const std::string &worldPath,
                  const std::string &entitiesPath,
                  const std::string &tutorialPath)
 {
-    World world;
+    auto world = new World(); // Creando dinámicamente un nuevo World
 
     int width = 0;
     int height = 0;
@@ -133,45 +133,45 @@ World LoadWorld(const std::string &worldPath,
     auto data = LoadDataMatrix(worldPath, width, height);
     auto entities = LoadDataMatrix(entitiesPath, width, height);
     // Load tutorials if the file exists
-    world.tutorialTexts = LoadTutorialText(tutorialPath);
-    world.width = width;
-    world.height = height;
+    world->tutorialTexts = LoadTutorialText(tutorialPath);
+    world->width = width;
+    world->height = height;
 
-    world.elementals.resize(width * height);
-    world.tiles.resize(height, std::vector<Color>(width));
-    world.tileTypes.resize(height, std::vector<TileType>(width));
-    world.tileStates.resize(height, std::vector<float>(width));
+    world->elementals.resize(width * height);
+    world->tiles.resize(height, std::vector<Color>(width));
+    world->tileTypes.resize(height, std::vector<TileType>(width));
+    world->tileStates.resize(height, std::vector<float>(width));
 
-    world.playerTexture = GetTextureFromPath(player_texture_path);
-    world.groundTexture = GetTextureFromPath(ground_texture_path);
+    world->playerTexture = GetTextureFromPath(player_texture_path);
+    world->groundTexture = GetTextureFromPath(ground_texture_path);
 
-    for (int y = 0; y < world.height; y++)
+    for (int y = 0; y < world->height; y++)
     {
-        for (int x = 0; x < world.width; x++)
+        for (int x = 0; x < world->width; x++)
         {
             auto tile = data[y][x];
-            world.tileTypes[y][x] = static_cast<TileType>(tile);
+            world->tileTypes[y][x] = static_cast<TileType>(tile);
             switch (tile)
             {
             case 0:
-                world.tiles[y][x] = dry_color;
-                world.tileTypes[y][x] = TileType::Dry;
-                world.tileStates[y][x] = 0.0f;
+                world->tiles[y][x] = dry_color;
+                world->tileTypes[y][x] = TileType::Dry;
+                world->tileStates[y][x] = 0.0f;
                 break;
             case 1:
-                world.tiles[y][x] = grass_color;
-                world.tileTypes[y][x] = TileType::Grass;
-                world.tileStates[y][x] = 0.5f;
+                world->tiles[y][x] = grass_color;
+                world->tileTypes[y][x] = TileType::Grass;
+                world->tileStates[y][x] = 0.5f;
                 break;
             case 2:
-                world.tiles[y][x] = snow_color;
-                world.tileTypes[y][x] = TileType::Grass;
-                world.tileStates[y][x] = 1.0f;
+                world->tiles[y][x] = snow_color;
+                world->tileTypes[y][x] = TileType::Grass;
+                world->tileStates[y][x] = 1.0f;
                 break;
             default:
-                world.tiles[y][x] = RED;
-                world.tileTypes[y][x] = TileType::None;
-                world.tileStates[y][x] = 0.0f;
+                world->tiles[y][x] = RED;
+                world->tileTypes[y][x] = TileType::None;
+                world->tileStates[y][x] = 0.0f;
                 break;
             }
 
@@ -180,7 +180,7 @@ World LoadWorld(const std::string &worldPath,
             auto position = Vector2{x * TILE_SIZE + HALF_TILE_SIZE, y * TILE_SIZE + HALF_TILE_SIZE};
             if (entity == 1)
             {
-                world.player.position = position;
+                world->player.position = position;
             }
             else if (entity == 2)
             {
@@ -188,7 +188,7 @@ World LoadWorld(const std::string &worldPath,
                 elemental.movementRadius = 1;
                 elemental.timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES;
                 elemental.ChoosenPosition = position;
-                world.elementals[y * world.width + x] = elemental;
+                world->elementals[y * world->width + x] = elemental;
 
             }
             else if (entity == 3)
@@ -197,7 +197,7 @@ World LoadWorld(const std::string &worldPath,
                 elemental.movementRadius = 1;
                 elemental.timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES;
                 elemental.ChoosenPosition = position;
-                world.elementals[y * world.width + x] = elemental;
+                world->elementals[y * world->width + x] = elemental;
             }
             else if (entity == 4)
             {
@@ -206,7 +206,7 @@ World LoadWorld(const std::string &worldPath,
                 elemental.timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES;
                 elemental.ChoosenPosition = position;
                 elemental.speed = 0.0f;
-                world.elementals[y * world.width + x] = elemental;
+                world->elementals[y * world->width + x] = elemental;
             }
         }
     }
@@ -214,20 +214,20 @@ World LoadWorld(const std::string &worldPath,
     return world;
 }
 
-void RenderWorld(const World &world)
+void RenderWorld(const World *world)
 {
-    BeginMode2D(world.camera);
-    for (int y = 0; y < world.height; y++)
+    BeginMode2D(world->camera);
+    for (int y = 0; y < world->height; y++)
     {
-        for (int x = 0; x < world.width; x++)
+        for (int x = 0; x < world->width; x++)
         {
-            DrawTexture(world.groundTexture, x * TILE_SIZE, y * TILE_SIZE, world.tiles[y][x]);
+            DrawTexture(world->groundTexture, x * TILE_SIZE, y * TILE_SIZE, world->tiles[y][x]);
         }
     }
 
-    for (int i = 0; i < world.width * world.height; i++)
+    for (int i = 0; i < world->width * world->height; i++)
     {
-        auto elemental = world.elementals[i];
+        auto elemental = world->elementals[i];
         if (elemental.type == ElemetalType::Fire)
         {
             DrawRectangle(elemental.position.x - HALF_TILE_SIZE, elemental.position.y - HALF_TILE_SIZE, TILE_SIZE, TILE_SIZE, RED);
@@ -242,50 +242,50 @@ void RenderWorld(const World &world)
         }
     }
 
-    DrawTexture(world.playerTexture,
-            world.player.position.x,
-            world.player.position.y - TILE_SIZE,
+    DrawTexture(world->playerTexture,
+            world->player.position.x,
+            world->player.position.y - TILE_SIZE,
             GREEN);
 
 
-    Vector2 playerTilePos = GetTilePosition(world.player.position);
+    Vector2 playerTilePos = GetTilePosition(world->player.position);
 
 #ifdef _DEBUG
     DrawRectangle(playerTilePos.x * TILE_SIZE, playerTilePos.y * TILE_SIZE, TILE_SIZE, TILE_SIZE, BLACK);
 #endif
 
-    for (const auto& tutorial : world.tutorialTexts) {
+    for (const auto& tutorial : world->tutorialTexts) {
         if(tutorial.isUi) continue;
         DrawRichText(tutorial.text.c_str(), static_cast<int>(tutorial.position.x), static_cast<int>(tutorial.position.y), 20, WHITE);
     }
     EndMode2D();
 
-    for (const auto& tutorial : world.tutorialTexts) {
+    for (const auto& tutorial : world->tutorialTexts) {
         if(!tutorial.isUi) continue;
         DrawRichText(tutorial.text.c_str(), static_cast<int>(tutorial.position.x), static_cast<int>(tutorial.position.y), 20, WHITE);
     }
 }
 
-void UpdateWorldState(World &world, float deltaTime)
+void UpdateWorldState(World *world, float deltaTime)
 {
-    for (const auto &elemental : world.elementals) {
+    for (const auto &elemental : world->elementals) {
         if (elemental.type == ElemetalType::None) continue;
         if (elemental.status == ElementalStatus::Grabbed) continue;
 
         Vector2 elementalTilePos = GetTilePosition(elemental.position);
-        int minX = std::max(0, static_cast<int>(elementalTilePos.x) - world.elementalRange);
-        int maxX = std::min(world.width, static_cast<int>(elementalTilePos.x) + world.elementalRange + 1);
-        int minY = std::max(0, static_cast<int>(elementalTilePos.y) - world.elementalRange);
-        int maxY = std::min(world.height, static_cast<int>(elementalTilePos.y) + world.elementalRange + 1);
+        int minX = std::max(0, static_cast<int>(elementalTilePos.x) - world->elementalRange);
+        int maxX = std::min(world->width, static_cast<int>(elementalTilePos.x) + world->elementalRange + 1);
+        int minY = std::max(0, static_cast<int>(elementalTilePos.y) - world->elementalRange);
+        int maxY = std::min(world->height, static_cast<int>(elementalTilePos.y) + world->elementalRange + 1);
 
         for (int y = minY; y < maxY; ++y) {
             for (int x = minX; x < maxX; ++x) {
                 float distance = Vector2Distance(elementalTilePos, Vector2{static_cast<float>(x), static_cast<float>(y)});
-                float influence = world.elementalRange - distance;
+                float influence = world->elementalRange - distance;
                 if (influence < 0) continue;
-                influence = influence * influence / (world.elementalRange * world.elementalRange) * world.elementalPower;
+                influence = influence * influence / (world->elementalRange * world->elementalRange) * world->elementalPower;
 
-                float current = world.tileStates[y][x];
+                float current = world->tileStates[y][x];
                 float targetState;
                 float rangeDelta;
 
@@ -303,46 +303,46 @@ void UpdateWorldState(World &world, float deltaTime)
                 }
 
                 float t = deltaTime * influence / (rangeDelta + 1e-6);
-                world.tileStates[y][x] = Lerp(current, targetState, t);
+                world->tileStates[y][x] = Lerp(current, targetState, t);
             }
         }
 
     }
 }
 
-void UpdateTileStates(World &world, float deltaTime)
+void UpdateTileStates(World *world, float deltaTime)
 {
     int numGrassTiles = 0;
-    for (int y = 0; y < world.height; y++)
+    for (int y = 0; y < world->height; y++)
     {
-        for (int x = 0; x < world.width; x++)
+        for (int x = 0; x < world->width; x++)
         {
-            float tileState = world.tileStates[y][x];
+            float tileState = world->tileStates[y][x];
             if (tileState <= dry_range.y) {
-                world.tiles[y][x] = dry_color;
-                world.tileTypes[y][x] = TileType::Dry;
+                world->tiles[y][x] = dry_color;
+                world->tileTypes[y][x] = TileType::Dry;
             } else if (tileState <= grass_range.y) {
-                world.tiles[y][x] = grass_color;
-                world.tileTypes[y][x] = TileType::Grass;
+                world->tiles[y][x] = grass_color;
+                world->tileTypes[y][x] = TileType::Grass;
             } else if (tileState <= snow_range.y) {
-                world.tiles[y][x] = snow_color;
-                world.tileTypes[y][x] = TileType::Snow;
+                world->tiles[y][x] = snow_color;
+                world->tileTypes[y][x] = TileType::Snow;
             }
 
-            if (world.tileTypes[y][x] == TileType::Grass) {
+            if (world->tileTypes[y][x] == TileType::Grass) {
                 numGrassTiles++;
             }
         }
     }
-    world.springDominance = static_cast<float>(numGrassTiles) / (world.width * world.height);
-    world.springTiles = numGrassTiles;
+    world->springDominance = static_cast<float>(numGrassTiles) / (world->width * world->height);
+    world->springTiles = numGrassTiles;
 }
 
-void UpdatePlayer(World &world, float deltaTime)
+void UpdatePlayer(World *world, float deltaTime)
 {
     // Dont allow player to move if it is dead or idle
-    if(world.player.status == PlayerStatus::Dead ||
-         world.player.status == PlayerStatus::Idle) return;
+    if(world->player.status == PlayerStatus::Dead ||
+         world->player.status == PlayerStatus::Idle) return;
 
     float directionX = 0.0f;
     float directionY = 0.0f;
@@ -366,37 +366,37 @@ void UpdatePlayer(World &world, float deltaTime)
         directionY /= length;
     }
 
-    float movementSpeed = world.player.speed * deltaTime;
-    world.player.position.x += directionX * movementSpeed;
-    world.player.position.y += directionY * movementSpeed;
+    float movementSpeed = world->player.speed * deltaTime;
+    world->player.position.x += directionX * movementSpeed;
+    world->player.position.y += directionY * movementSpeed;
 
     Vector2 proposedPosition = {
-        world.player.position.x + directionX * movementSpeed,
-        world.player.position.y + directionY * movementSpeed
+        world->player.position.x + directionX * movementSpeed,
+        world->player.position.y + directionY * movementSpeed
     };
 
-    proposedPosition.x = Clamp(proposedPosition.x, 0.0f, (world.width - 1) * TILE_SIZE);
-    proposedPosition.y = Clamp(proposedPosition.y, 0.0f, (world.height - 1) * TILE_SIZE);
+    proposedPosition.x = Clamp(proposedPosition.x, 0.0f, (world->width - 1) * TILE_SIZE);
+    proposedPosition.y = Clamp(proposedPosition.y, 0.0f, (world->height - 1) * TILE_SIZE);
 
-    world.player.position = proposedPosition;
+    world->player.position = proposedPosition;
 
     if (IsKeyPressed(KEY_SPACE)) {
-        if (world.player.status == PlayerStatus::Moving) {
-            for (auto &elemental : world.elementals) {
-                float distance = Vector2Distance(world.player.position, elemental.position);
+        if (world->player.status == PlayerStatus::Moving) {
+            for (auto &elemental : world->elementals) {
+                float distance = Vector2Distance(world->player.position, elemental.position);
                 if (distance < TILE_SIZE * 2 && elemental.status == ElementalStatus::Moving) {
                     elemental.status = ElementalStatus::Grabbed;
-                    world.player.status = PlayerStatus::Grabbing;
+                    world->player.status = PlayerStatus::Grabbing;
                     break;
                     }
             }
-        } else if (world.player.status == PlayerStatus::Grabbing) {
-            for (auto &elemental : world.elementals) {
+        } else if (world->player.status == PlayerStatus::Grabbing) {
+            for (auto &elemental : world->elementals) {
                 if (elemental.status == ElementalStatus::Grabbed) {
                     elemental.status = ElementalStatus::Moving;
                     elemental.movementRadius = 1;
                     elemental.timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES;
-                    world.player.status = PlayerStatus::Moving;
+                    world->player.status = PlayerStatus::Moving;
                     elemental.ChoosenPosition = elemental.position;
                     break;
                 }
@@ -415,12 +415,12 @@ void UpdateCamera(World *world, float deltaTime)
     world->camera.zoom = 1.0f;
 }
 
-void UpdateElementals(World& world, float deltaTime) {
-    for (auto& elemental : world.elementals) {
+void UpdateElementals(World* world, float deltaTime) {
+    for (auto& elemental : world->elementals) {
         if (elemental.type == ElemetalType::None) continue;
 
         if(elemental.status == ElementalStatus::Grabbed){
-            elemental.position = world.player.position;
+            elemental.position = world->player.position;
             continue;
         }
 
@@ -435,9 +435,9 @@ void UpdateElementals(World& world, float deltaTime) {
         if (distance < elemental.speed * deltaTime) {
 
             float minX = std::max(0.0f, elemental.position.x - elemental.movementRadius * TILE_SIZE);
-            float maxX = std::min((world.width - 1) * TILE_SIZE, elemental.position.x + elemental.movementRadius * TILE_SIZE);
+            float maxX = std::min((world->width - 1) * TILE_SIZE, elemental.position.x + elemental.movementRadius * TILE_SIZE);
             float minY = std::max(0.0f, elemental.position.y - elemental.movementRadius * TILE_SIZE);
-            float maxY = std::min((world.height - 1) * TILE_SIZE, elemental.position.y + elemental.movementRadius * TILE_SIZE);
+            float maxY = std::min((world->height - 1) * TILE_SIZE, elemental.position.y + elemental.movementRadius * TILE_SIZE);
 
             elemental.ChoosenPosition = GetRandomVector(minX, minY, maxX, maxY);
 
@@ -449,16 +449,22 @@ void UpdateElementals(World& world, float deltaTime) {
     }
 }
 
-void UpdateWorld(World &world, float deltaTime)
+void UpdateWorld(World* world, float deltaTime)
 {
     UpdatePlayer(world, deltaTime);
     UpdateWorldState(world, deltaTime);
     UpdateElementals(world, deltaTime);
     UpdateTileStates(world, deltaTime);
-    UpdateCamera(&world, deltaTime);
+    UpdateCamera(world, deltaTime);
 }
 
 Vector2 GetTilePosition(const Vector2& position)
 {
     return Vector2{std::floor(position.x / TILE_SIZE), std::floor(position.y / TILE_SIZE)};
+}
+
+void DeleteWorld(World* world) {
+    if (!world) return;
+    UnloadTexture(world->playerTexture);
+    UnloadTexture(world->groundTexture);
 }

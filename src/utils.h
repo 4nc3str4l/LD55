@@ -33,6 +33,12 @@ inline Color ParseColor(const std::string& colorString) {
              static_cast<unsigned char>(a) };
 }
 
+inline std::string FormatText(const char* format, int value) {
+    char buffer[128]; // Ensure buffer is large enough for your formatting needs
+    snprintf(buffer, sizeof(buffer), format, value);
+    return std::string(buffer);
+}
+
 
 inline void DrawRichText(const char* text, int posX, int posY, int fontSize, Color defaultColor) {
     std::string strText = text;

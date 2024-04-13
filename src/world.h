@@ -65,14 +65,22 @@ struct Player {
 };
 
 struct Elemental {
-    Vector2 position;
-    ElemetalType type;
+    Vector2 position{};
+    ElemetalType type = ElemetalType::None;
     int movementRadius = 1;
     float speed = 50.0f;
     int timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES;
     Vector2 ChoosenPosition = {0, 0};
     ElementalStatus status = ElementalStatus::Moving;
 };
+
+enum class GameStatus {
+    Starting = 0,
+    Playing = 1,
+    GameOver = 2,
+    LevelComplete = 2,
+};
+
 
 struct TutorialText {
     Vector2 position;
@@ -103,10 +111,11 @@ struct World {
     float springDominance = 0.0f;
 };
 
-World LoadWorld(const std::string &worldPath,
+World* LoadWorld(const std::string &worldPath,
                 const std::string &entitiesPath,
                 const std::string &tutorialPath);
+void DeleteWorld(World* world);
 std::vector<TutorialText> LoadTutorialText(const std::string &path);
-void RenderWorld(const World &world);
-void UpdateWorld(World &world, float deltaTime);
+void RenderWorld(const World *world);
+void UpdateWorld(World *world, float deltaTime);
 Vector2 GetTilePosition(const Vector2 &position);

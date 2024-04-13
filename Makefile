@@ -1,26 +1,23 @@
 # Common variables
-SRC_DIR=src
-DIST_DIR=dist
-RAYLIB_DIR=./dependencies/raylib/src
+SRC_DIR := src
+DIST_DIR := dist
+RAYLIB_DIR := ./dependencies/raylib/src
 
-# Sources
-SOURCES=$(SRC_DIR)/main.cpp $(SRC_DIR)/world.cpp
+# Automatically list all source (.cpp) and header (.h) files
+SOURCES := $(wildcard $(SRC_DIR)/*.cpp)
+HEADERS := $(wildcard $(SRC_DIR)/*.h)
 
-# Header files
-HEADERS=$(SRC_DIR)/world.h $(SRC_DIR)/utils.h
-
-LIBS=-I$(RAYLIB_DIR) -L$(RAYLIB_DIR) -lraylib
+LIBS := -I$(RAYLIB_DIR) -L$(RAYLIB_DIR) -lraylib
 
 # Native Options
-CC=g++  # Cambiado de gcc a g++
-CFLAGS=-Wall -I$(RAYLIB_DIR) -L. -lraylib -lm -lGL -lpthread -ldl -lrt -lX11
-TARGET_NATIVE=$(DIST_DIR)/ludum_dare_55
+CC := g++  # Cambiado de gcc a g++
+CFLAGS := -Wall -I$(RAYLIB_DIR) -L. -lraylib -lm -lGL -lpthread -ldl -lrt -lX11
+TARGET_NATIVE := $(DIST_DIR)/ludum_dare_55
 
 # Emscripten Options
-EMCC=emcc
-EMFLAGS=-s USE_GLFW=3 -s ASYNCIFY -s TOTAL_MEMORY=67108864 -s ALLOW_MEMORY_GROWTH=1 -s FORCE_FILESYSTEM=1 -s ASSERTIONS=1 -sSTACK_SIZE=131072 --preload-file resources@/
-TARGET_WEB=$(DIST_DIR)/game.js
-
+EMCC := emcc
+EMFLAGS := -s USE_GLFW=3 -s ASYNCIFY -s TOTAL_MEMORY=67108864 -s ALLOW_MEMORY_GROWTH=1 -s FORCE_FILESYSTEM=1 -s ASSERTIONS=1 -s STACK_SIZE=131072 --preload-file resources@/
+TARGET_WEB := $(DIST_DIR)/game.js
 
 .PHONY: all web native clean
 
@@ -37,7 +34,7 @@ $(TARGET_WEB): $(SOURCES) $(HEADERS)
 	$(EMCC) $(SOURCES) -o $(TARGET_WEB) $(EMFLAGS) --preload-file resources $(LIBS)
 	cp template.html $(DIST_DIR)/index.html
 
-# native target
+# Native target
 native: $(TARGET_NATIVE)
 
 $(TARGET_NATIVE): $(SOURCES) $(HEADERS)
@@ -49,6 +46,6 @@ watch:
 		make web; \
 	done
 
-# clean command
+# Clean command
 clean:
 	rm -f $(DIST_DIR)/*
