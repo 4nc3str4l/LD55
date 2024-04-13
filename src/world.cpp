@@ -169,6 +169,7 @@ void UpdateWorldState(World &world, float deltaTime)
 {
     for (const auto &elemental : world.elementals) {
         if (elemental.type == ElemetalType::None) continue;
+        if (elemental.status == ElementalStatus::Grabbed) continue;
 
         Vector2 elementalTilePos = GetTilePosition(elemental.position);
         int minX = std::max(0, static_cast<int>(elementalTilePos.x) - world.elementalRange);
@@ -221,6 +222,10 @@ void UpdateTileStates(World &world, float deltaTime)
 
 void UpdatePlayer(World &world, float deltaTime)
 {
+    // Dont allow player to move if it is dead or idle
+    if(world.player.status == PlayerStatus::Dead ||
+         world.player.status == PlayerStatus::Idle) return;
+
     float directionX = 0.0f;
     float directionY = 0.0f;
 
@@ -256,6 +261,32 @@ void UpdatePlayer(World &world, float deltaTime)
     proposedPosition.y = Clamp(proposedPosition.y, 0.0f, (WORLD_HEIGHT - 1) * TILE_SIZE);
 
     world.player.position = proposedPosition;
+
+    if (IsKeyPressed(KEY_SPACE)) {
+        if (world.player.status == PlayerStatus::Moving) {
+            for (auto &elemental : world.elementals) {
+                float distance = Vector2Distance(world.player.position, elemental.position);
+                if (distance < TILE_SIZE * 2 && elemental.status == ElementalStatus::Moving) {
+                    elemental.status = ElementalStatus::Grabbed;
+                    world.player.status = PlayerStatus::Grabbing;
+                    break;
+                    }
+            }
+        } else if (world.player.status == PlayerStatus::Grabbing) {
+            // Soltar el Elemental actualmente capturado
+            for (auto &elemental : world.elementals) {
+                if (elemental.status == ElementalStatus::Grabbed) {
+                    elemental.status = ElementalStatus::Moving;
+                    elemental.movementRadius = 1; // Resetear el radio de movimiento
+                    elemental.timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES; // Resetear el contador
+                    world.player.status = PlayerStatus::Moving;
+                    elemental.ChoosenPosition = elemental.position;
+                    break;
+                }
+            }
+        }
+    }
+
 }
 
 
@@ -270,6 +301,11 @@ void UpdateCamera(World *world, float deltaTime)
 void UpdateElementals(World& world, float deltaTime) {
     for (auto& elemental : world.elementals) {
         if (elemental.type == ElemetalType::None) continue;
+
+        if(elemental.status == ElementalStatus::Grabbed){
+            elemental.position = world.player.position;
+            continue;
+        }
 
         Vector2 direction = Vector2Subtract(elemental.ChoosenPosition, elemental.position);
         float distance = Vector2Length(direction);

@@ -46,9 +46,23 @@ enum class EntityType {
     WinterTotem = 6,
 };
 
+enum class ElementalStatus {
+    Idle = 0,
+    Moving = 1,
+    Grabbed = 2,
+};
+
+enum class PlayerStatus {
+    Idle = 0,
+    Moving = 1,
+    Grabbing = 2,
+    Dead = 3,
+};
+
 struct Player {
     Vector2 position = { 100, 100 };
     float speed = 100.0f;
+    PlayerStatus status = PlayerStatus::Moving;
 };
 
 struct Elemental {
@@ -58,6 +72,7 @@ struct Elemental {
     float speed = 50.0f;
     int timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES;
     Vector2 ChoosenPosition = {0, 0};
+    ElementalStatus status = ElementalStatus::Moving;
 };
 
 struct World {
