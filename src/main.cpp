@@ -5,6 +5,11 @@ auto SCREEN_WIDTH = 1024;
 auto SCREEN_HEIGHT = 576;
 auto TITLE = "Ludum Dare 55";
 
+void DrawUI(const World &world)
+{
+    DrawRectangle(10, 10, 200, 20, BLACK);
+}
+
 int main()
 {
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE);
@@ -26,7 +31,7 @@ int main()
         UpdateWorld(world, deltaTime);
         RenderWorld(world);
 
-        DrawText(TITLE, 10, 10, 20, DARKGRAY);
+        DrawUI(world);
 
         EndDrawing();
     }

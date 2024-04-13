@@ -4,6 +4,7 @@
 #include <sstream>
 #include <iostream>
 #include <cmath>
+#include "raymath.h"
 
 inline const auto player_texture_path = "resources/player.png";
 inline const auto ground_texture_path = "resources/ground.png";
@@ -64,6 +65,7 @@ World LoadWorld(const std::string &worldPath, const std::string &entitiesPath)
     world.playerTexture = GetTextureFromPath(player_texture_path);
     world.groundTexture = GetTextureFromPath(ground_texture_path);
 
+
     for (int y = 0; y < WORLD_HEIGHT; y++)
     {
         for (int x = 0; x < WORLD_WIDTH; x++)
@@ -116,6 +118,7 @@ World LoadWorld(const std::string &worldPath, const std::string &entitiesPath)
 
 void RenderWorld(const World &world)
 {
+    BeginMode2D(world.camera);
     for (int y = 0; y < WORLD_HEIGHT; y++)
     {
         for (int x = 0; x < WORLD_WIDTH; x++)
@@ -139,9 +142,70 @@ void RenderWorld(const World &world)
 
     DrawTexture(world.playerTexture,
             world.player.position.x,
-            world.player.position.y,
+            world.player.position.y - TILE_SIZE,
             GREEN);
 
+
+    Vector2 playerTilePos = GetTilePosition(world.player.position);
+
+#ifdef _DEBUG
+    DrawRectangle(playerTilePos.x * TILE_SIZE, playerTilePos.y * TILE_SIZE, TILE_SIZE, TILE_SIZE, BLACK);
+#endif
+    EndMode2D();
+}
+
+void UpdateWorldState(World &world, float deltaTime)
+{
+    for (const auto &elemental : world.elementals) {
+        if (elemental.type == ElemetalType::None) continue;
+
+        Vector2 elementalTilePos = GetTilePosition(elemental.position);
+        int minX = std::max(0, static_cast<int>(elementalTilePos.x) - world.elementalRange);
+        int maxX = std::min(WORLD_WIDTH, static_cast<int>(elementalTilePos.x) + world.elementalRange + 1);
+        int minY = std::max(0, static_cast<int>(elementalTilePos.y) - world.elementalRange);
+        int maxY = std::min(WORLD_HEIGHT, static_cast<int>(elementalTilePos.y) + world.elementalRange + 1);
+
+        for (int y = minY; y < maxY; ++y) {
+            for (int x = minX; x < maxX; ++x) {
+                float distance = Vector2Distance(elementalTilePos, Vector2{static_cast<float>(x), static_cast<float>(y)});
+                float influence = world.elementalRange - distance;
+                if (influence < 0) continue;
+                influence = influence * influence / (world.elementalRange * world.elementalRange) * world.elementalPower;
+                if (elemental.type == ElemetalType::Fire) {
+                    world.tileStates[x][y] = std::max(dry_range.x, world.tileStates[x][y] - influence * deltaTime);
+                } else if (elemental.type == ElemetalType::Ice) {
+                    world.tileStates[x][y] = std::min(snow_range.y, world.tileStates[x][y] + influence * deltaTime);
+                }
+            }
+        }
+    }
+}
+
+void UpdateTileStates(World &world, float deltaTime)
+{
+    int numGrassTiles = 0;
+    for (int y = 0; y < WORLD_HEIGHT; y++)
+    {
+        for (int x = 0; x < WORLD_WIDTH; x++)
+        {
+            float tileState = world.tileStates[x][y];
+            if (tileState <= dry_range.y) {
+                world.tiles[x][y] = dry_color;
+                world.tileTypes[x][y] = TileType::Dry;
+            } else if (tileState <= grass_range.y) {
+                world.tiles[x][y] = grass_color;
+                world.tileTypes[x][y] = TileType::Grass;
+            } else if (tileState <= snow_range.y) {
+                world.tiles[x][y] = snow_color;
+                world.tileTypes[x][y] = TileType::Snow;
+            }
+
+            if (world.tileTypes[x][y] == TileType::Grass) {
+                numGrassTiles++;
+            }
+        }
+    }
+    world.springDominance = static_cast<float>(numGrassTiles) / (WORLD_WIDTH * WORLD_HEIGHT);
 }
 
 void UpdatePlayer(World &world, float deltaTime)
@@ -171,11 +235,36 @@ void UpdatePlayer(World &world, float deltaTime)
     float movementSpeed = world.player.speed * deltaTime;
     world.player.position.x += directionX * movementSpeed;
     world.player.position.y += directionY * movementSpeed;
+
+    // Calcula la nueva posición propuesta para el jugador
+    Vector2 proposedPosition = {
+        world.player.position.x + directionX * movementSpeed,
+        world.player.position.y + directionY * movementSpeed
+    };
+
+    // Ajusta la posición propuesta para que no se salga de los límites del mundo
+    proposedPosition.x = Clamp(proposedPosition.x, 0.0f, (WORLD_WIDTH - 1) * TILE_SIZE);
+    proposedPosition.y = Clamp(proposedPosition.y, 0.0f, (WORLD_HEIGHT - 1) * TILE_SIZE);
+
+    // Establece la posición ajustada del jugador
+    world.player.position = proposedPosition;
+}
+
+
+void UpdateCamera(World *world, float deltaTime)
+{
+    world->camera.target = world->player.position;
+    world->camera.offset = Vector2{GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
+    world->camera.rotation = 0.0f;
+    world->camera.zoom = 1.0f;
 }
 
 void UpdateWorld(World &world, float deltaTime)
 {
     UpdatePlayer(world, deltaTime);
+    UpdateWorldState(world, deltaTime);
+    UpdateTileStates(world, deltaTime);
+    UpdateCamera(&world, deltaTime);
 }
 
 Vector2 GetTilePosition(const Vector2& position)

@@ -61,8 +61,14 @@ struct World {
     Player player = Player();
     Elemental elementals[WORLD_WIDTH * WORLD_HEIGHT]{};
 
-    Texture2D playerTexture;
-    Texture2D groundTexture;
+    Texture2D playerTexture{};
+    Texture2D groundTexture{};
+
+    float elementalPower = 0.1f;
+    int elementalRange = 4;
+    Camera2D camera = { 0 };
+    int missingSpringTiles = 0;
+    float springDominance = 0.0f;
 };
 
 World LoadWorld(const std::string &worldPath, const std::string &entitiesPath);

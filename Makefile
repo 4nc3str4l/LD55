@@ -7,7 +7,7 @@ RAYLIB_DIR=./dependencies/raylib/src
 SOURCES=$(SRC_DIR)/main.cpp $(SRC_DIR)/world.cpp
 
 # Header files
-HEADERS=$(SRC_DIR)/world.h
+HEADERS=$(SRC_DIR)/world.h $(SRC_DIR)/utils.h
 
 LIBS=-I$(RAYLIB_DIR) -L$(RAYLIB_DIR) -lraylib
 
