@@ -69,7 +69,61 @@ Texture2D GetTextureFromPath(const std::string& path)
     return texture;
 }
 
-World LoadWorld(const std::string &worldPath, const std::string &entitiesPath)
+std::vector<TutorialText> LoadTutorialText(const std::string& path) {
+    std::vector<TutorialText> tutorials;
+    std::ifstream file(path);
+    std::string line;
+
+    if (file.is_open()) {
+        while (std::getline(file, line)) {
+            line.erase(0, line.find_first_not_of(" \t"));
+            line.erase(line.find_last_not_of(" \t") + 1);
+
+            if (line.empty() || line[0] == '#') {
+                continue;
+            }
+
+            std::istringstream iss(line);
+            std::string type;
+            int posX, posY;
+            std::string text;
+
+            if (std::getline(iss, type, ',') && (iss >> posX) && iss.ignore(256, ',') && (iss >> posY)) {
+                std::getline(std::getline(iss, text, ']'), text);
+
+                text.erase(0, text.find_first_not_of(" \t"));
+
+                TutorialText tutorialText;
+                tutorialText.position = Vector2{ static_cast<float>(posX), static_cast<float>(posY) };
+                tutorialText.text = text;
+
+                if (type.find("[u") != std::string::npos) {
+                    tutorialText.isUi = true;
+                } else if (type.find("[w") != std::string::npos) {
+                    tutorialText.isUi = false;
+                } else {
+                    std::cout << "Unknown type prefix: " << type << ". Line: " << line << std::endl;
+                    continue;
+                }
+
+                tutorials.push_back(tutorialText);
+            } else {
+                std::cout << "Failed to parse line: " << line << std::endl;
+            }
+        }
+        file.close();
+    } else {
+        std::cout << "Unable to open file: " << path << std::endl;
+    }
+
+    std::cout << "Num tutorials loaded: " << tutorials.size() << std::endl;
+    return tutorials;
+}
+
+
+World LoadWorld(const std::string &worldPath,
+                 const std::string &entitiesPath,
+                 const std::string &tutorialPath)
 {
     World world;
 
@@ -78,7 +132,8 @@ World LoadWorld(const std::string &worldPath, const std::string &entitiesPath)
 
     auto data = LoadDataMatrix(worldPath, width, height);
     auto entities = LoadDataMatrix(entitiesPath, width, height);
-
+    // Load tutorials if the file exists
+    world.tutorialTexts = LoadTutorialText(tutorialPath);
     world.width = width;
     world.height = height;
 
@@ -198,7 +253,17 @@ void RenderWorld(const World &world)
 #ifdef _DEBUG
     DrawRectangle(playerTilePos.x * TILE_SIZE, playerTilePos.y * TILE_SIZE, TILE_SIZE, TILE_SIZE, BLACK);
 #endif
+
+    for (const auto& tutorial : world.tutorialTexts) {
+        if(tutorial.isUi) continue;
+        DrawRichText(tutorial.text.c_str(), static_cast<int>(tutorial.position.x), static_cast<int>(tutorial.position.y), 20, WHITE);
+    }
     EndMode2D();
+
+    for (const auto& tutorial : world.tutorialTexts) {
+        if(!tutorial.isUi) continue;
+        DrawRichText(tutorial.text.c_str(), static_cast<int>(tutorial.position.x), static_cast<int>(tutorial.position.y), 20, WHITE);
+    }
 }
 
 void UpdateWorldState(World &world, float deltaTime)

@@ -74,6 +74,12 @@ struct Elemental {
     ElementalStatus status = ElementalStatus::Moving;
 };
 
+struct TutorialText {
+    Vector2 position;
+    bool isUi = true;
+    std::string text;
+};
+
 struct World {
     int currentLevel = 1;
     int width = 0;
@@ -83,6 +89,7 @@ struct World {
     std::vector<std::vector<TileType>> tileTypes;
     std::vector<std::vector<float>> tileStates;
     std::vector<Elemental> elementals;
+    std::vector<TutorialText> tutorialTexts;
 
     Player player = Player();
 
@@ -96,7 +103,10 @@ struct World {
     float springDominance = 0.0f;
 };
 
-World LoadWorld(const std::string &worldPath, const std::string &entitiesPath);
+World LoadWorld(const std::string &worldPath,
+                const std::string &entitiesPath,
+                const std::string &tutorialPath);
+std::vector<TutorialText> LoadTutorialText(const std::string &path);
 void RenderWorld(const World &world);
 void UpdateWorld(World &world, float deltaTime);
 Vector2 GetTilePosition(const Vector2 &position);

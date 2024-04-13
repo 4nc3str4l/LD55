@@ -2,6 +2,7 @@
 #include "world.h"
 #include <sstream>
 #include <iomanip>
+#include "utils.h"
 
 auto SCREEN_WIDTH = 1024;
 auto SCREEN_HEIGHT = 576;
@@ -37,6 +38,7 @@ void DrawUI(const World &world)
     DrawText(FormatText("Level: %i", world.currentLevel).c_str(), SCREEN_WIDTH - 100, 15, 20, WHITE);
 }
 
+
 int main()
 {
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE);
@@ -47,7 +49,8 @@ int main()
     SetTargetFPS(60);
 
     World world = LoadWorld("resources/worlds/level_1_ground.csv",
-                    "resources/worlds/level_1_entities.csv");
+                    "resources/worlds/level_1_entities.csv",
+                    "resources/worlds/level_1_tutorial.txt");
 
     while (!WindowShouldClose())
     {
