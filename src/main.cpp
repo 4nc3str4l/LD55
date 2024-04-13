@@ -32,6 +32,10 @@ int main()
 
         EndDrawing();
     }
+
+    // Clear scheduler for security
+    Scheduler::Clear();
+
     sceneManager.UnloadCurrentScene();
 
     CloseAudioDevice();
