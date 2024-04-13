@@ -13,7 +13,7 @@ int main()
     SceneManager& sceneManager = SceneManager::GetInstance();
     sceneManager.AddScene("Splash", std::make_shared<SplashScene>());
     sceneManager.AddScene("InGame", std::make_shared<InGameScene>());
-    sceneManager.ChangeScene("InGame");
+    sceneManager.ChangeScene("Splash");
 
     SetTargetFPS(60);
 
