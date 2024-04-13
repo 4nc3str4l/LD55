@@ -11,8 +11,8 @@ inline auto dry_color = Color{233, 178, 86, 255 };
 inline auto grass_color = Color{ 0, 255, 115, 255 };
 inline auto snow_color = Color{ 240, 240, 240, 255 };
 
-inline auto dry_range = Vector2{0.0f, 0.03f};
-inline auto grass_range = Vector2{0.03f, 0.7f};
+inline auto dry_range = Vector2{0.0f, 0.3f};
+inline auto grass_range = Vector2{0.3f, 0.7f};
 inline auto snow_range = Vector2{0.7f, 1.0f};
 
 std::vector<std::vector<int>> LoadDataMatrix(const std::string& path, int& width, int& height);
@@ -23,6 +23,7 @@ enum class ElemetalType {
     None = 0,
     Fire = 1,
     Ice = 2,
+    Spring = 3,
 };
 
 enum class TileType {
@@ -37,9 +38,11 @@ enum class EntityType {
     Player = 1,
     FireElemental = 2,
     IceElemental = 3,
-    SpringTotem = 4,
-    SummerTotem = 5,
-    WinterTotem = 6,
+    SpringElemental = 4,
+    SpringTotem = 5,
+    SummerTotem = 6,
+    WinterTotem = 7,
+    Count
 };
 
 enum class ElementalStatus {

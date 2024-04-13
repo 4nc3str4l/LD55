@@ -144,6 +144,15 @@ World LoadWorld(const std::string &worldPath, const std::string &entitiesPath)
                 elemental.ChoosenPosition = position;
                 world.elementals[y * world.width + x] = elemental;
             }
+            else if (entity == 4)
+            {
+                auto elemental = Elemental{position, ElemetalType::Spring};
+                elemental.movementRadius = 0;
+                elemental.timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES;
+                elemental.ChoosenPosition = position;
+                elemental.speed = 0.0f;
+                world.elementals[y * world.width + x] = elemental;
+            }
         }
     }
 
@@ -171,6 +180,10 @@ void RenderWorld(const World &world)
         else if (elemental.type == ElemetalType::Ice)
         {
             DrawRectangle(elemental.position.x - HALF_TILE_SIZE, elemental.position.y - HALF_TILE_SIZE, TILE_SIZE, TILE_SIZE, BLUE);
+        }
+        else if (elemental.type == ElemetalType::Spring)
+        {
+            DrawRectangle(elemental.position.x - HALF_TILE_SIZE, elemental.position.y - HALF_TILE_SIZE, TILE_SIZE, TILE_SIZE, GREEN);
         }
     }
 
@@ -206,13 +219,29 @@ void UpdateWorldState(World &world, float deltaTime)
                 float influence = world.elementalRange - distance;
                 if (influence < 0) continue;
                 influence = influence * influence / (world.elementalRange * world.elementalRange) * world.elementalPower;
+
+                float current = world.tileStates[y][x];
+                float targetState;
+                float rangeDelta;
+
                 if (elemental.type == ElemetalType::Fire) {
-                    world.tileStates[y][x] = std::max(dry_range.x, world.tileStates[y][x] - influence * deltaTime);
+                    targetState = dry_range.x;
+                    rangeDelta = abs(current - dry_range.x);
                 } else if (elemental.type == ElemetalType::Ice) {
-                    world.tileStates[y][x] = std::min(snow_range.y, world.tileStates[y][x] + influence * deltaTime);
+                    targetState = snow_range.y;
+                    rangeDelta = abs(current - snow_range.y);
+                } else if (elemental.type == ElemetalType::Spring) {
+                    targetState = grass_range.x + (grass_range.y -grass_range.x) / 2.0f;
+                    rangeDelta = abs(current - targetState);
+                } else {
+                    continue;
                 }
+
+                float t = deltaTime * influence / (rangeDelta + 1e-6);
+                world.tileStates[y][x] = Lerp(current, targetState, t);
             }
         }
+
     }
 }
 
