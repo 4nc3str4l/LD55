@@ -39,17 +39,30 @@ void InGameScene::Load() {
                     "resources/worlds/level_1_entities.csv",
                     "resources/worlds/level_1_tutorial.txt");
     this->world = w;
+
+    distortionShader = LoadDistorionShader();
+    float resolution[2] = {(float)GetScreenWidth(), (float)GetScreenHeight()};
+    SetShaderValue(distortionShader, GetShaderLocation(distortionShader, "resolution"), resolution, SHADER_UNIFORM_VEC2);
+
+    entitiesShader = LoadEntitiesShader();
+    SetShaderValue(entitiesShader, GetShaderLocation(entitiesShader, "resolution"), resolution, SHADER_UNIFORM_VEC2);
+
 }
 
 void InGameScene::Update(float deltaTime) {
+    timeElapsed += deltaTime;
+    SetShaderValue(distortionShader, GetShaderLocation(distortionShader, "time"), &timeElapsed, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(entitiesShader, GetShaderLocation(entitiesShader, "time"), &timeElapsed, SHADER_UNIFORM_FLOAT);
     UpdateWorld(world, deltaTime);
 }
 
 void InGameScene::Render() {
-    RenderWorld(world);
+    RenderWorld(world, &distortionShader, &entitiesShader);
     DrawUI(world);
 }
 
 void InGameScene::Unload() {
     DeleteWorld(world);
+    UnloadShader(distortionShader);
+    UnloadShader(entitiesShader);
 }

@@ -11,7 +11,6 @@
 inline const auto player_texture_path = "resources/player.png";
 inline const auto ground_texture_path = "resources/ground.png";
 
-#define _DEBUG
 
 std::vector<std::vector<int>> LoadDataMatrix(const std::string& path, int& width, int& height) {
     std::ifstream file(path);
@@ -236,17 +235,28 @@ void RenderPhysics(const World *world) {
     }
 }
 
-void RenderWorld(const World *world)
+void RenderWorld(World *world, Shader* distortionShader, Shader* entitiesShader)
 {
     BeginMode2D(world->camera);
     for (int y = 0; y < world->height; y++)
     {
         for (int x = 0; x < world->width; x++)
         {
-            DrawTexture(world->groundTexture, x * TILE_SIZE, y * TILE_SIZE, world->tiles[y][x]);
+            // Calcula el ángulo de rotación basado en la posición
+            float rotation = ((x + y) % 4) * 90;  // Esto rota las texturas en 0, 90, 180, o 270 grados
+
+            // Calcula el punto de origen para la rotación, aquí es el centro del tile
+            Vector2 origin = { TILE_SIZE / 2.0f, TILE_SIZE / 2.0f };
+
+            // Dibuja la textura con rotación
+            Rectangle sourceRec = { 0, 0, TILE_SIZE, TILE_SIZE };  // Región de la textura a dibujar
+            Rectangle destRec = { x * TILE_SIZE + TILE_SIZE / 2.0f, y * TILE_SIZE + TILE_SIZE / 2.0f, TILE_SIZE, TILE_SIZE };  // Destino y tamaño en pantalla
+            Vector2 originRec = { TILE_SIZE / 2.0f, TILE_SIZE / 2.0f };  // Punto de origen para rotar
+
+            // Ajusta las posiciones y rota la textura
+            DrawTexturePro(world->groundTexture, sourceRec, destRec, originRec, rotation, world->tiles[y][x]);
         }
     }
-
     for (int i = 0; i < world->width * world->height; i++)
     {
         auto elemental = world->elementals[i];
@@ -268,10 +278,23 @@ void RenderWorld(const World *world)
         DrawRectangle(block.position.x, block.position.y, TILE_SIZE, TILE_SIZE, GRAY);
     }
 
-    DrawTexture(world->playerTexture,
-            world->player.position.x,
-            world->player.position.y - TILE_SIZE,
-            GREEN);
+    world->particleSystem.Draw();
+
+    BeginShaderMode(*entitiesShader);
+
+        Vector4 tintVector = {
+            GREEN.r / 255.0f,
+            GREEN.g / 255.0f,
+            GREEN.b / 255.0f,
+            fmax(world->springDominance, 0.2f),
+        };
+
+        SetShaderValue(*entitiesShader, GetShaderLocation(*entitiesShader, "tint"), &tintVector, SHADER_UNIFORM_VEC4);
+        DrawTexture(world->playerTexture,
+                world->player.position.x,
+                world->player.position.y - TILE_SIZE,
+                GREEN);
+    EndShaderMode();
 
 
     Vector2 playerTilePos = GetTilePosition(world->player.position);
@@ -295,9 +318,42 @@ void RenderWorld(const World *world)
         if(!tutorial.isUi) continue;
         DrawRichText(tutorial.text.c_str(), static_cast<int>(tutorial.position.x), static_cast<int>(tutorial.position.y), 20, WHITE);
     }
-
-
 }
+
+void EmitParticlesFromElementals(float deltaTime, World* world) {
+    static float particleTimer = 0.0f;
+    particleTimer += deltaTime;
+
+    if (particleTimer >= 0.3f) {
+        particleTimer = 0.0f;
+
+        for (auto& elemental : world->elementals) {
+            if (elemental.type == ElemetalType::None || elemental.status == ElementalStatus::Grabbed) continue;
+            auto randomValue = GetRandomFloat(0.0f, 1.0f);
+            if (randomValue > 0.5f) continue;
+
+            int minX = std::max(0, static_cast<int>(elemental.position.x / TILE_SIZE) - world->elementalRange);
+            int maxX = std::min(world->width - 1, static_cast<int>(elemental.position.x / TILE_SIZE) + world->elementalRange);
+            int minY = std::max(0, static_cast<int>(elemental.position.y / TILE_SIZE) - world->elementalRange);
+            int maxY = std::min(world->height - 1, static_cast<int>(elemental.position.y / TILE_SIZE) + world->elementalRange);
+
+            for (int y = minY; y <= maxY; ++y) {
+                for (int x = minX; x <= maxX; ++x) {
+
+                    randomValue = GetRandomFloat(0.0f, 1.0f);
+                    if (randomValue > 0.5f) continue;
+                    Vector2 targetPos = {x * TILE_SIZE + TILE_SIZE / 2.0f, y * TILE_SIZE + TILE_SIZE / 2.0f};
+                    Vector2 velocity = Vector2Subtract(targetPos, elemental.position);
+                    velocity = Vector2Scale(Vector2Normalize(velocity), 50.0f * randomValue);
+                    Color color = (elemental.type == ElemetalType::Fire) ? RED : (elemental.type == ElemetalType::Ice) ? BLUE : GREEN;
+                    color.a = 255 * randomValue;
+                    world->particleSystem.Emit(elemental.position, velocity, 5.0f, color, 1.0f);
+                }
+            }
+        }
+    }
+}
+
 
 void UpdateWorldState(World *world, float deltaTime)
 {
@@ -341,6 +397,9 @@ void UpdateWorldState(World *world, float deltaTime)
         }
 
     }
+
+    EmitParticlesFromElementals(deltaTime, world);
+    world->particleSystem.Update(deltaTime);
 }
 
 void UpdateTileStates(World *world, float deltaTime)
@@ -386,20 +445,29 @@ bool IsCollidingWithBlocks(World *world, Vector2 proposedPosition) {
 
 void HandleInteractionWithElementals(World *world) {
     for (auto &elemental : world->elementals) {
-        float distance = Vector2Distance(world->player.position, elemental.position);
-        if (distance < TILE_SIZE * 2 && elemental.status == ElementalStatus::Moving) {
-            elemental.status = ElementalStatus::Grabbed;
-            world->player.status = PlayerStatus::Grabbing;
-            break;
-        } else if (world->player.status == PlayerStatus::Grabbing && elemental.status == ElementalStatus::Grabbed) {
+
+        if(elemental.type == ElemetalType::None) continue;
+        if (world->player.status == PlayerStatus::Grabbing &&
+            elemental.status == ElementalStatus::Grabbed) {
             elemental.status = ElementalStatus::Moving;
+            world->player.status = PlayerStatus::Moving;
             elemental.movementRadius = 1;
             elemental.timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES;
-            world->player.status = PlayerStatus::Moving;
             elemental.ChoosenPosition = elemental.position;
+            break;
+        }
+        else
+        {
+            float distance = Vector2Distance(world->player.position, elemental.position);
+            if (distance < TILE_SIZE * 2.5 && elemental.status == ElementalStatus::Moving) {
+                elemental.status = ElementalStatus::Grabbed;
+                world->player.status = PlayerStatus::Grabbing;
+                break;
+            }
         }
     }
 }
+
 
 
 void UpdatePlayer(World *world, float deltaTime)
@@ -453,7 +521,7 @@ void UpdatePlayer(World *world, float deltaTime)
     world->player.position.x = Clamp(world->player.position.x, 0.0f, (world->width - 1) * TILE_SIZE);
     world->player.position.y = Clamp(world->player.position.y, 0.0f, (world->height - 1) * TILE_SIZE);
 
-    if (IsKeyPressed(KEY_SPACE)) {
+    if (IsKeyReleased(KEY_SPACE)) {
         HandleInteractionWithElementals(world);
     }
 }

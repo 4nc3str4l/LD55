@@ -2,6 +2,7 @@
 #define INGAMESCENE_H
 
 #include "GameScene.h"
+#include "raylib.h"
 struct World;
 
 class InGameScene : public GameScene {
@@ -13,6 +14,9 @@ public:
     virtual void Unload() override;
 private:
     World* world;
+    Shader distortionShader;
+    Shader entitiesShader;
+    float timeElapsed = 0.0f;
 };
 
 #endif // INGAMESCENE_H

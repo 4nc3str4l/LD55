@@ -80,3 +80,25 @@ inline void DrawRichText(const char* text, int posX, int posY, int fontSize, Col
         }
     }
 }
+
+inline Shader LoadDistorionShader() {
+    Shader distortionShader;
+    // if platform is web
+#if defined(PLATFORM_WEB)
+    distortionShader = LoadShader(NULL, "resources/distortion_web.fs");
+#else
+    distortionShader = LoadShader(NULL, "resources/distortion.fs");
+#endif
+    return distortionShader;
+}
+
+inline Shader LoadEntitiesShader() {
+    Shader entitiesShader;
+    // if platform is web
+#if defined(PLATFORM_WEB)
+    entitiesShader = LoadShader(NULL, "resources/entities_web.fs");
+#else
+    entitiesShader = LoadShader(NULL, "resources/entities.fs");
+#endif
+    return entitiesShader;
+}

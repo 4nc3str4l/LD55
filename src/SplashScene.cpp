@@ -22,16 +22,10 @@ void SplashScene::Load() {
     }
     PlayMusicStream(backgroundMusic);
 
-    // if platform is web
-
-#if defined(PLATFORM_WEB)
-    distortionShader = LoadShader(NULL, "resources/distortion_web.fs");
-#else
-    distortionShader = LoadShader(NULL, "resources/distortion.fs");
-#endif
-
+    distortionShader = LoadDistorionShader();
     float resolution[2] = {(float)GetScreenWidth(), (float)GetScreenHeight()};
     SetShaderValue(distortionShader, GetShaderLocation(distortionShader, "resolution"), resolution, SHADER_UNIFORM_VEC2);
+
 }
 
 void SplashScene::Update(float deltaTime)

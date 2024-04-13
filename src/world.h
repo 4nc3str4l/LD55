@@ -3,6 +3,7 @@
 #include "raylib.h"
 #include <vector>
 #include <string>
+#include "ParticleSystem.h"
 
 #define TILE_SIZE 32.0f
 #define HALF_TILE_SIZE 16.0f
@@ -68,7 +69,8 @@ struct Player {
     PlayerStatus status = PlayerStatus::Moving;
 };
 
-struct Elemental {
+struct Elemental
+{
     Vector2 position{};
     ElemetalType type = ElemetalType::None;
     int movementRadius = 1;
@@ -118,6 +120,8 @@ struct World {
     Camera2D camera = {0};
     int springTiles = 0;
     float springDominance = 0.0f;
+
+    ParticleSystem particleSystem;
 };
 
 World* LoadWorld(const std::string &worldPath,
@@ -125,6 +129,6 @@ World* LoadWorld(const std::string &worldPath,
                 const std::string &tutorialPath);
 void DeleteWorld(World* world);
 std::vector<TutorialText> LoadTutorialText(const std::string &path);
-void RenderWorld(const World *world);
+void RenderWorld(World *world, Shader* distortionShader, Shader* entitiesShader);
 void UpdateWorld(World *world, float deltaTime);
 Vector2 GetTilePosition(const Vector2 &position);
