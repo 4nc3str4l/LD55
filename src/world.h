@@ -4,12 +4,8 @@
 #include <vector>
 #include <string>
 
-#define WORLD_WIDTH  32
-#define WORLD_HEIGHT 18
-
 #define TILE_SIZE 32.0f
 #define HALF_TILE_SIZE 16.0f
-
 
 inline auto dry_color = Color{233, 178, 86, 255 };
 inline auto grass_color = Color{ 0, 255, 115, 255 };
@@ -19,7 +15,7 @@ inline auto dry_range = Vector2{0.0f, 0.03f};
 inline auto grass_range = Vector2{0.03f, 0.7f};
 inline auto snow_range = Vector2{0.7f, 1.0f};
 
-std::vector<std::vector<int>> LoadDataMatrix(const std::string& path, int width, int height);
+std::vector<std::vector<int>> LoadDataMatrix(const std::string& path, int& width, int& height);
 
 inline constexpr int TIMES_INTIL_MOVEMENT_RADIUS_INCRESES = 4;
 
@@ -77,18 +73,22 @@ struct Elemental {
 
 struct World {
     int currentLevel = 1;
-    Color tiles[WORLD_WIDTH][WORLD_HEIGHT]{};
-    TileType tileTypes[WORLD_WIDTH][WORLD_HEIGHT]{};
-    float tileStates[WORLD_WIDTH][WORLD_HEIGHT]{};
+    int width = 0;
+    int height = 0;
+
+    std::vector<std::vector<Color>> tiles;
+    std::vector<std::vector<TileType>> tileTypes;
+    std::vector<std::vector<float>> tileStates;
+    std::vector<Elemental> elementals;
+
     Player player = Player();
-    Elemental elementals[WORLD_WIDTH * WORLD_HEIGHT]{};
 
     Texture2D playerTexture{};
     Texture2D groundTexture{};
 
     float elementalPower = 0.1f;
     int elementalRange = 4;
-    Camera2D camera = { 0 };
+    Camera2D camera = {0};
     int springTiles = 0;
     float springDominance = 0.0f;
 };

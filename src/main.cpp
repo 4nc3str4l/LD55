@@ -31,7 +31,7 @@ void DrawUI(const World &world)
     DrawRectangle(200, 15, 200, 10, RED);
     DrawRectangle(200, 15, 200 * world.springDominance, 10, LIME);
     // Draw total number of tiles / number of missing tiles
-    DrawFormattedText(world.springTiles, WORLD_WIDTH * WORLD_HEIGHT,
+    DrawFormattedText(world.springTiles, world.width* world.height,
                             world.springDominance, 225, 15);
     // Print the level where we are
     DrawText(FormatText("Level: %i", world.currentLevel).c_str(), SCREEN_WIDTH - 100, 15, 20, WHITE);
