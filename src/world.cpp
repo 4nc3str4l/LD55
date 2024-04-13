@@ -236,17 +236,14 @@ void UpdatePlayer(World &world, float deltaTime)
     world.player.position.x += directionX * movementSpeed;
     world.player.position.y += directionY * movementSpeed;
 
-    // Calcula la nueva posición propuesta para el jugador
     Vector2 proposedPosition = {
         world.player.position.x + directionX * movementSpeed,
         world.player.position.y + directionY * movementSpeed
     };
 
-    // Ajusta la posición propuesta para que no se salga de los límites del mundo
     proposedPosition.x = Clamp(proposedPosition.x, 0.0f, (WORLD_WIDTH - 1) * TILE_SIZE);
     proposedPosition.y = Clamp(proposedPosition.y, 0.0f, (WORLD_HEIGHT - 1) * TILE_SIZE);
 
-    // Establece la posición ajustada del jugador
     world.player.position = proposedPosition;
 }
 
