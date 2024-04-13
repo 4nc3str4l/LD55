@@ -17,6 +17,8 @@ private:
 
     int titleSize;
     int pressEnterToStartSize;
+    bool changeSceneSheduled = false;
+    float fadeOutOpacity = 0.0f;
 };
 
 #endif // SPLASHSCENE_H

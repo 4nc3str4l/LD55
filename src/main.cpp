@@ -3,6 +3,7 @@
 #include "InGameScene.h"
 #include "SceneManager.h"
 #include "constants.h"
+#include "Scheduler.h"
 
 int main()
 {
@@ -20,6 +21,9 @@ int main()
     while (!WindowShouldClose())
     {
         float deltaTime = GetFrameTime();
+
+        Scheduler::Update(deltaTime);
+
         BeginDrawing();
         ClearBackground(GRAY);
 
