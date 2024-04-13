@@ -76,6 +76,7 @@ struct Elemental {
 };
 
 struct World {
+    int currentLevel = 1;
     Color tiles[WORLD_WIDTH][WORLD_HEIGHT]{};
     TileType tileTypes[WORLD_WIDTH][WORLD_HEIGHT]{};
     float tileStates[WORLD_WIDTH][WORLD_HEIGHT]{};
@@ -88,7 +89,7 @@ struct World {
     float elementalPower = 0.1f;
     int elementalRange = 4;
     Camera2D camera = { 0 };
-    int missingSpringTiles = 0;
+    int springTiles = 0;
     float springDominance = 0.0f;
 };
 

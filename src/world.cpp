@@ -218,6 +218,7 @@ void UpdateTileStates(World &world, float deltaTime)
         }
     }
     world.springDominance = static_cast<float>(numGrassTiles) / (WORLD_WIDTH * WORLD_HEIGHT);
+    world.springTiles = numGrassTiles;
 }
 
 void UpdatePlayer(World &world, float deltaTime)
