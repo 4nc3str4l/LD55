@@ -24,6 +24,7 @@ enum class ElemetalType {
     Fire = 1,
     Ice = 2,
     Spring = 3,
+    Count
 };
 
 enum class TileType {
@@ -31,7 +32,8 @@ enum class TileType {
     Dry = 0,
     Grass = 1,
     Snow = 2,
-    Count = 3
+    Block = 3,
+    Count
 };
 
 enum class EntityType {
@@ -49,6 +51,7 @@ enum class ElementalStatus {
     Idle = 0,
     Moving = 1,
     Grabbed = 2,
+    Count
 };
 
 enum class PlayerStatus {
@@ -56,11 +59,12 @@ enum class PlayerStatus {
     Moving = 1,
     Grabbing = 2,
     Dead = 3,
+    Count
 };
 
 struct Player {
     Vector2 position = { 100, 100 };
-    float speed = 100.0f;
+    float speed = 300.0f;
     PlayerStatus status = PlayerStatus::Moving;
 };
 
@@ -88,6 +92,10 @@ struct TutorialText {
     std::string text;
 };
 
+struct Block {
+    Vector2 position;
+};
+
 struct World {
     int currentLevel = 1;
     int width = 0;
@@ -98,6 +106,7 @@ struct World {
     std::vector<std::vector<float>> tileStates;
     std::vector<Elemental> elementals;
     std::vector<TutorialText> tutorialTexts;
+    std::vector<Block> blocks;
 
     Player player = Player();
 

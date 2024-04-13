@@ -25,7 +25,7 @@ int main()
         Scheduler::Update(deltaTime);
 
         BeginDrawing();
-        ClearBackground(GRAY);
+        ClearBackground(DARKGRAY);
 
         sceneManager.UpdateCurrentScene(deltaTime);
         sceneManager.RenderCurrentScene();

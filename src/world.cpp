@@ -168,6 +168,11 @@ World* LoadWorld(const std::string &worldPath,
                 world->tileTypes[y][x] = TileType::Grass;
                 world->tileStates[y][x] = 1.0f;
                 break;
+            case 3:
+                world->blocks.push_back({ Vector2{x * TILE_SIZE, y * TILE_SIZE} });
+                world->tileTypes[y][x] = TileType::Block;
+            break;
+
             default:
                 world->tiles[y][x] = RED;
                 world->tileTypes[y][x] = TileType::None;
@@ -214,6 +219,23 @@ World* LoadWorld(const std::string &worldPath,
     return world;
 }
 
+void RenderPhysics(const World *world) {
+    // Render the player's collision rectangle
+    Rectangle playerRect = {
+        world->player.position.x - HALF_TILE_SIZE,
+        world->player.position.y + 32 - HALF_TILE_SIZE,
+        TILE_SIZE,
+        TILE_SIZE / 2
+    };
+    DrawRectangleRec(playerRect, Fade(PURPLE, 0.5)); // Semi-transparent purple for visibility
+
+    // Render blocks' collision rectangles
+    for (const auto& block : world->blocks) {
+        Rectangle blockRect = { block.position.x, block.position.y, TILE_SIZE, TILE_SIZE };
+        DrawRectangleRec(blockRect, Fade(ORANGE, 0.5)); // Semi-transparent orange for visibility
+    }
+}
+
 void RenderWorld(const World *world)
 {
     BeginMode2D(world->camera);
@@ -242,6 +264,10 @@ void RenderWorld(const World *world)
         }
     }
 
+    for (const auto& block : world->blocks) {
+        DrawRectangle(block.position.x, block.position.y, TILE_SIZE, TILE_SIZE, GRAY);
+    }
+
     DrawTexture(world->playerTexture,
             world->player.position.x,
             world->player.position.y - TILE_SIZE,
@@ -258,12 +284,19 @@ void RenderWorld(const World *world)
         if(tutorial.isUi) continue;
         DrawRichText(tutorial.text.c_str(), static_cast<int>(tutorial.position.x), static_cast<int>(tutorial.position.y), 20, WHITE);
     }
+
+#ifdef _DEBUG
+    RenderPhysics(world);
+#endif
+
     EndMode2D();
 
     for (const auto& tutorial : world->tutorialTexts) {
         if(!tutorial.isUi) continue;
         DrawRichText(tutorial.text.c_str(), static_cast<int>(tutorial.position.x), static_cast<int>(tutorial.position.y), 20, WHITE);
     }
+
+
 }
 
 void UpdateWorldState(World *world, float deltaTime)
@@ -329,7 +362,9 @@ void UpdateTileStates(World *world, float deltaTime)
                 world->tileTypes[y][x] = TileType::Snow;
             }
 
-            if (world->tileTypes[y][x] == TileType::Grass) {
+            // Blocks count as spring for simplicity
+            if (world->tileTypes[y][x] == TileType::Grass ||
+                 world->tileTypes[y][x] == TileType::Block) {
                 numGrassTiles++;
             }
         }
@@ -338,9 +373,37 @@ void UpdateTileStates(World *world, float deltaTime)
     world->springTiles = numGrassTiles;
 }
 
+bool IsCollidingWithBlocks(World *world, Vector2 proposedPosition) {
+    Rectangle playerRect = { proposedPosition.x - HALF_TILE_SIZE, proposedPosition.y + 32 - HALF_TILE_SIZE, TILE_SIZE, TILE_SIZE / 2 };
+    for (auto& block : world->blocks) {
+        Rectangle blockRect = { block.position.x, block.position.y, TILE_SIZE / 2, TILE_SIZE };
+        if (CheckCollisionRecs(playerRect, blockRect)) {
+            return true;  // Collision detected
+        }
+    }
+    return false;  // No collision
+}
+
+void HandleInteractionWithElementals(World *world) {
+    for (auto &elemental : world->elementals) {
+        float distance = Vector2Distance(world->player.position, elemental.position);
+        if (distance < TILE_SIZE * 2 && elemental.status == ElementalStatus::Moving) {
+            elemental.status = ElementalStatus::Grabbed;
+            world->player.status = PlayerStatus::Grabbing;
+            break;
+        } else if (world->player.status == PlayerStatus::Grabbing && elemental.status == ElementalStatus::Grabbed) {
+            elemental.status = ElementalStatus::Moving;
+            elemental.movementRadius = 1;
+            elemental.timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES;
+            world->player.status = PlayerStatus::Moving;
+            elemental.ChoosenPosition = elemental.position;
+        }
+    }
+}
+
+
 void UpdatePlayer(World *world, float deltaTime)
 {
-    // Dont allow player to move if it is dead or idle
     if(world->player.status == PlayerStatus::Dead ||
          world->player.status == PlayerStatus::Idle) return;
 
@@ -367,44 +430,34 @@ void UpdatePlayer(World *world, float deltaTime)
     }
 
     float movementSpeed = world->player.speed * deltaTime;
-    world->player.position.x += directionX * movementSpeed;
-    world->player.position.y += directionY * movementSpeed;
-
-    Vector2 proposedPosition = {
+    Vector2 newPositionX = {
         world->player.position.x + directionX * movementSpeed,
+        world->player.position.y
+    };
+    Vector2 newPositionY = {
+        world->player.position.x,
         world->player.position.y + directionY * movementSpeed
     };
 
-    proposedPosition.x = Clamp(proposedPosition.x, 0.0f, (world->width - 1) * TILE_SIZE);
-    proposedPosition.y = Clamp(proposedPosition.y, 0.0f, (world->height - 1) * TILE_SIZE);
-
-    world->player.position = proposedPosition;
-
-    if (IsKeyPressed(KEY_SPACE)) {
-        if (world->player.status == PlayerStatus::Moving) {
-            for (auto &elemental : world->elementals) {
-                float distance = Vector2Distance(world->player.position, elemental.position);
-                if (distance < TILE_SIZE * 2 && elemental.status == ElementalStatus::Moving) {
-                    elemental.status = ElementalStatus::Grabbed;
-                    world->player.status = PlayerStatus::Grabbing;
-                    break;
-                    }
-            }
-        } else if (world->player.status == PlayerStatus::Grabbing) {
-            for (auto &elemental : world->elementals) {
-                if (elemental.status == ElementalStatus::Grabbed) {
-                    elemental.status = ElementalStatus::Moving;
-                    elemental.movementRadius = 1;
-                    elemental.timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES;
-                    world->player.status = PlayerStatus::Moving;
-                    elemental.ChoosenPosition = elemental.position;
-                    break;
-                }
-            }
-        }
+    // Check X-axis movement for block collisions
+    if (!IsCollidingWithBlocks(world, newPositionX)) {
+        world->player.position.x = newPositionX.x;
     }
 
+    // Check Y-axis movement for block collisions
+    if (!IsCollidingWithBlocks(world, newPositionY)) {
+        world->player.position.y = newPositionY.y;
+    }
+
+    // Ensure the player stays within the world bounds
+    world->player.position.x = Clamp(world->player.position.x, 0.0f, (world->width - 1) * TILE_SIZE);
+    world->player.position.y = Clamp(world->player.position.y, 0.0f, (world->height - 1) * TILE_SIZE);
+
+    if (IsKeyPressed(KEY_SPACE)) {
+        HandleInteractionWithElementals(world);
+    }
 }
+
 
 
 void UpdateCamera(World *world, float deltaTime)

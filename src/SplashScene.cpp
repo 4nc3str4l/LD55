@@ -13,10 +13,33 @@ void SplashScene::Load() {
 
     titleSize = MeasureText("Spring MUST Come", 40);
     pressEnterToStartSize = MeasureText("Press [SPACE] to start", 20);
+
+    backgroundMusic = LoadMusicStream("resources/bg_music.mp3");;
+
+    if(backgroundMusic.stream.buffer == nullptr)
+    {
+        std::cout << "Error loading music" << std::endl;
+    }
+    PlayMusicStream(backgroundMusic);
+
+    // if platform is web
+
+#if defined(PLATFORM_WEB)
+    distortionShader = LoadShader(NULL, "resources/distortion_web.fs");
+#else
+    distortionShader = LoadShader(NULL, "resources/distortion.fs");
+#endif
+
+    float resolution[2] = {(float)GetScreenWidth(), (float)GetScreenHeight()};
+    SetShaderValue(distortionShader, GetShaderLocation(distortionShader, "resolution"), resolution, SHADER_UNIFORM_VEC2);
 }
 
 void SplashScene::Update(float deltaTime)
 {
+    timeElapsed += deltaTime;
+    SetShaderValue(distortionShader, GetShaderLocation(distortionShader, "time"), &timeElapsed, SHADER_UNIFORM_FLOAT);
+
+    UpdateMusicStream(backgroundMusic);
     if(IsKeyPressed(KEY_SPACE))
     {
         if(!changeSceneSheduled)
@@ -36,8 +59,12 @@ void SplashScene::Update(float deltaTime)
 
 void SplashScene::Render()
 {
+    BeginShaderMode(distortionShader);
     DrawTexture(background, 0, 0, WHITE);
+    EndShaderMode();
+
     DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Fade(BLACK, 0.7f));
+
     DrawRichText("Spring <color=0,255,155,255>MUST</color> Come", SCREEN_WIDTH / 2 - titleSize / 2, 100, 40, WHITE);
     DrawRichText("Press <color=0,255,155,255> [SPACE] </color> to start", SCREEN_WIDTH / 2 - pressEnterToStartSize /2, SCREEN_HEIGHT / 2 + 100, 20, WHITE);
 
@@ -51,4 +78,6 @@ void SplashScene::Render()
 void SplashScene::Unload() {
     std::cout << "Unloading Splash Scene resources..." << std::endl;
     UnloadTexture(background);
+    UnloadMusicStream(backgroundMusic);
+    UnloadShader(distortionShader);
 }
