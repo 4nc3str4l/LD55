@@ -1,4 +1,6 @@
 # Comments are accepted in this type of format
 # This is a ui text
-[w, 5, -50] <color=0,255,155,255>Deja vu?</color>
+[w, 270, -40] <color=0,255,155,255>Deja</color> vu?
 
+
+[w, 110, 210] All <color=0,255,155,255>GOOD</color> things must come to an <color=255,0,0,255>END</color>
