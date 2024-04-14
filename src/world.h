@@ -147,6 +147,8 @@ struct World
     Texture2D fireElementalCaptiveTexture{};
     Texture2D iceElementalCaptiveTexture{};
 
+    Texture2D blockTexture{};
+
     float elementalPower = 0.1f;
     int elementalRange = 4;
     Camera2D camera = {0};

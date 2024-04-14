@@ -171,6 +171,7 @@ World *LoadWorld(int level,
     world->iceElementalTexture = GetTextureFromPath("resources/ice_elemental_free.png");
     world->fireElementalCaptiveTexture = GetTextureFromPath("resources/fire_elemental_captive.png");
     world->iceElementalCaptiveTexture = GetTextureFromPath("resources/ice_elemental_captive.png");
+    world->blockTexture = GetTextureFromPath("resources/block.png");
 
     for (int y = 0; y < world->height; y++)
     {
@@ -276,7 +277,7 @@ void RenderWorld(World *world, Shader *distortionShader, Shader *entitiesShader)
 
     for (const auto &block : world->blocks)
     {
-        DrawRectangle(block.position.x, block.position.y, TILE_SIZE, TILE_SIZE, GRAY);
+        DrawTexture(world->blockTexture, block.position.x, block.position.y, WHITE);
     }
 
     BeginShaderMode(*entitiesShader);
@@ -540,7 +541,7 @@ void UpdateTileStates(World *world, float deltaTime)
 
 bool IsCollidingWithBlocks(World *world, Vector2 proposedPosition)
 {
-    Rectangle playerRect = {proposedPosition.x - HALF_TILE_SIZE, proposedPosition.y + 32 - HALF_TILE_SIZE, TILE_SIZE, TILE_SIZE / 2};
+    Rectangle playerRect = {proposedPosition.x - HALF_TILE_SIZE +10, proposedPosition.y + 32 - HALF_TILE_SIZE , TILE_SIZE -10, TILE_SIZE / 2 - 15};
     for (auto &block : world->blocks)
     {
         Rectangle blockRect = {block.position.x, block.position.y, TILE_SIZE / 2, TILE_SIZE};
@@ -789,10 +790,12 @@ void DeleteWorld(World *world)
     UnloadTexture(world->playerTexture);
     UnloadTexture(world->groundTexture);
     UnloadTexture(world->springStaffTexture);
-    UnloadTexture(world->fireElementalTexture);
     UnloadTexture(world->iceElementalTexture);
+    UnloadTexture(world->iceElementalCaptiveTexture);
+    UnloadTexture(world->fireElementalTexture);
     UnloadTexture(world->fireElementalCaptiveTexture);
     UnloadTexture(world->springStaffTexture);
+    UnloadTexture(world->blockTexture);
     FXManager::Cleanup();
     delete world;
 }
