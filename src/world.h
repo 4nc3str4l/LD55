@@ -168,6 +168,10 @@ struct World
     bool grabbingIceStaff = false;
 
     Vector2 gemPosition = {0, 0};
+
+    float timeInVictory = 0.0f;
+
+    bool wasInVictory = false;
 };
 
 World *LoadWorld(int level,
@@ -184,3 +188,5 @@ void NotifyPlayerHealthChange(World *world, float lastHealth, float newHealth);
 Vector2 GetPlayerCenter(World* world);
 
 void RenderGrabbingStaff(World* world, Shader *entitiesShader);
+
+bool VictoryCondition(World *world);

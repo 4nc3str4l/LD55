@@ -77,10 +77,9 @@ void InGameScene::UpdatePlaying(float deltaTime)
     SetShaderValue(entitiesShader, GetShaderLocation(entitiesShader, "time"), &timeElapsed, SHADER_UNIFORM_FLOAT);
     UpdateWorld(world, deltaTime);
 
-    if (world->springDominance >= 1.0f)
+    if (VictoryCondition(world) && world->timeInVictory > 1.0f)
     {
         gameState = GameState::VICTORY;
-        SoundManager::PlaySound(SFX_VICTORY, 0.5f, 0.1f);
         SoundManager::PlayMusic(SoundManager::titleMusic, 0.7f);
     }
     else if (world->player.mortalEntity.isDead)

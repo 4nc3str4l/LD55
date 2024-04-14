@@ -275,8 +275,102 @@ World *LoadWorld(int level,
     return world;
 }
 
+void RenderVictoryWorld(World *world, Shader *distortionShader, Shader *entitiesShader)
+{
+    // Render the player
+    BeginMode2D(world->camera);
+
+    for (int y = 0; y < world->height; y++)
+    {
+        for (int x = 0; x < world->width; x++)
+        {
+            float sineWave = sinf((x + world->timeInVictory * 10.0f) * 0.5f);
+            float yOffset = (world->height - y + sineWave * 5.0f) * TILE_SIZE * (1.0f - world->timeInVictory);
+
+            yOffset = fmaxf(0.0f, yOffset);
+            DrawTexture(world->groundTexture, x * TILE_SIZE, y * TILE_SIZE - yOffset, world->tiles[y][x]);
+        }
+    }
+
+    // Same for blocks
+    for (const auto &block : world->blocks)
+    {
+        // Añadir una oscilación basada en seno que dependa de la posición x, y y el tiempo
+        float sineWave = sinf((block.position.x / TILE_SIZE + world->timeInVictory * 10.0f) * 0.5f);
+        float yOffset = ((world->height - block.position.y / TILE_SIZE) + sineWave * 5.0f) * TILE_SIZE * (1.0f - world->timeInVictory);
+
+        // Asegúrate de que yOffset es positivo para que los bloques "vuelen" hacia arriba
+        yOffset = fmaxf(0.0f, yOffset);
+
+        DrawTexture(world->blockTexture, block.position.x, block.position.y - yOffset, WHITE);
+    }
+    BeginShaderMode(*entitiesShader);
+
+    Vector4 tintVector = {
+        GREEN.r / 255.0f,
+        GREEN.g / 255.0f,
+        GREEN.b / 255.0f,
+        fmax(world->player.mortalEntity.health / world->player.mortalEntity.initialHealth, 0.05f),
+    };
+
+    SetShaderValue(*entitiesShader, GetShaderLocation(*entitiesShader, "tint"), &tintVector, SHADER_UNIFORM_VEC4);
+    DrawTexture(world->playerTexture,
+                world->player.position.x,
+                world->player.position.y - TILE_SIZE,
+                GREEN);
+    EndShaderMode();
+
+    for (const auto &elemental : world->elementals)
+    {
+
+        if (elemental.type == ElementalType::Fire)
+        {
+            DrawTexture(world->fireElementalCaptiveTexture, elemental.position.x - TILE_SIZE / 2, elemental.position.y - TILE_SIZE, WHITE);
+        }
+        else if (elemental.type == ElementalType::Ice)
+        {
+            DrawTexture(world->iceElementalCaptiveTexture, elemental.position.x - TILE_SIZE / 2, elemental.position.y - TILE_SIZE, WHITE);
+        }
+        else if (elemental.type == ElementalType::Spring)
+        {
+            BeginShaderMode(*entitiesShader);
+            Vector4 tintVector = {
+                1, 1, 1, 1};
+            SetShaderValue(*entitiesShader, GetShaderLocation(*entitiesShader, "tint"), &tintVector, SHADER_UNIFORM_VEC4);
+            DrawTexture(world->springStaffTexture, elemental.position.x - TILE_SIZE / 2, elemental.position.y - TILE_SIZE, WHITE);
+            EndShaderMode();
+        }
+        else if (elemental.type == ElementalType::FireStaff)
+        {
+            BeginShaderMode(*entitiesShader);
+            Vector4 tintVector = {
+                1, 1, 1, 1};
+            SetShaderValue(*entitiesShader, GetShaderLocation(*entitiesShader, "tint"), &tintVector, SHADER_UNIFORM_VEC4);
+            DrawTexture(world->fireStaffTexture, elemental.position.x - TILE_SIZE / 2, elemental.position.y - TILE_SIZE, WHITE);
+            EndShaderMode();
+        }
+        else if (elemental.type == ElementalType::IceStaff)
+        {
+            BeginShaderMode(*entitiesShader);
+            Vector4 tintVector = {
+                1, 1, 1, 1};
+            SetShaderValue(*entitiesShader, GetShaderLocation(*entitiesShader, "tint"), &tintVector, SHADER_UNIFORM_VEC4);
+            DrawTexture(world->iceStaffTexture, elemental.position.x - TILE_SIZE / 2, elemental.position.y - TILE_SIZE, WHITE);
+            EndShaderMode();
+        }
+    }
+    EndMode2D();
+}
+
 void RenderWorld(World *world, Shader *distortionShader, Shader *entitiesShader)
 {
+
+    if (VictoryCondition(world))
+    {
+        RenderVictoryWorld(world, distortionShader, entitiesShader);
+        return;
+    }
+
     BeginMode2D(world->camera);
     for (int y = 0; y < world->height; y++)
     {
@@ -918,12 +1012,19 @@ void UpdateElementals(World *world, float deltaTime)
 
 void UpdateWorld(World *world, float deltaTime)
 {
+    FXManager::Update(deltaTime);
+
+    if (VictoryCondition(world))
+    {
+        world->timeInVictory += deltaTime;
+        return;
+    }
+
     UpdatePlayer(world, deltaTime);
     UpdateWorldState(world, deltaTime);
     UpdateElementals(world, deltaTime);
     UpdateTileStates(world, deltaTime);
     UpdateCamera(world, deltaTime);
-    FXManager::Update(deltaTime);
 }
 
 Vector2 GetTilePosition(const Vector2 &position)
@@ -1029,4 +1130,19 @@ void NotifyPlayerHealthChange(World *world, float lastHealth, float newHealth)
 Vector2 GetPlayerCenter(World *world)
 {
     return Vector2{world->player.position.x + HALF_TILE_SIZE, world->player.position.y + HALF_TILE_SIZE};
+}
+
+bool VictoryCondition(World *world)
+{
+    bool victory = world->springDominance >= 1.0f;
+    if(!world->wasInVictory)
+    {
+        if(victory)
+        {
+            SoundManager::PlaySound(SFX_VICTORY, 0.3f, 0.1f);
+            world->wasInVictory = true;
+            FXManager::AddFadeRect(Rectangle{0, 0, static_cast<float>(GetScreenWidth()), static_cast<float>(GetScreenHeight())}, GREEN, 0.025f, false);
+        }
+    }
+    return victory;
 }
