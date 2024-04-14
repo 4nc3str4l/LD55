@@ -1,0 +1,4 @@
+# Comments are accepted in this type of format
+# This is a ui text
+[w, 5, -50] <color=0,255,155,255>Deja vu?</color>
+

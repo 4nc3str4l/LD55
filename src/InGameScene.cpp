@@ -239,7 +239,7 @@ World *InGameScene::GetWorld(int level)
 void InGameScene::Load()
 {
     gameState = GameState::STARTING;
-    currentLevel = 9;
+    currentLevel = 10;
 
     RegisterWorld(1);
     RegisterWorld(2);
@@ -250,6 +250,8 @@ void InGameScene::Load()
     RegisterWorld(7);
     RegisterWorld(8);
     RegisterWorld(9);
+    RegisterWorld(10);
+    
 
     this->world = GetWorld(currentLevel);
 
