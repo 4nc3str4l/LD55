@@ -46,6 +46,10 @@ watch:
 		make web; \
 	done
 
+# Run command for native application
+run: native
+	./$(TARGET_NATIVE)
+
 # Clean command
 clean:
 	rm -f $(DIST_DIR)/*
