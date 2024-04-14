@@ -140,12 +140,13 @@ std::vector<TutorialText> LoadTutorialText(const std::string &path)
     return tutorials;
 }
 
-World *LoadWorld(const std::string &worldPath,
+World *LoadWorld(int level,
+                 const std::string &worldPath,
                  const std::string &entitiesPath,
                  const std::string &tutorialPath)
 {
-    auto world = new World(); // Creando dinámicamente un nuevo World
-
+    auto world = new World();
+    world->currentLevel = level;
     int width = 0;
     int height = 0;
 
@@ -156,7 +157,6 @@ World *LoadWorld(const std::string &worldPath,
     world->width = width;
     world->height = height;
 
-    world->elementals.resize(width * height);
     world->tiles.resize(height, std::vector<Color>(width));
     world->tileTypes.resize(height, std::vector<TileType>(width));
     world->tileStates.resize(height, std::vector<float>(width));
@@ -217,7 +217,7 @@ World *LoadWorld(const std::string &worldPath,
                 elemental.movementRadius = 1;
                 elemental.timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES;
                 elemental.ChoosenPosition = position;
-                world->elementals[y * world->width + x] = elemental;
+                world->elementals.emplace_back(elemental);
             }
             else if (entity == 3)
             {
@@ -225,7 +225,7 @@ World *LoadWorld(const std::string &worldPath,
                 elemental.movementRadius = 1;
                 elemental.timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES;
                 elemental.ChoosenPosition = position;
-                world->elementals[y * world->width + x] = elemental;
+                world->elementals.emplace_back(elemental);
             }
             else if (entity == 4)
             {
@@ -234,7 +234,7 @@ World *LoadWorld(const std::string &worldPath,
                 elemental.timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES;
                 elemental.ChoosenPosition = position;
                 elemental.speed = 0.0f;
-                world->elementals[y * world->width + x] = elemental;
+                world->elementals.emplace_back(elemental);
             }
         }
     }
@@ -270,9 +270,9 @@ void RenderWorld(World *world, Shader *distortionShader, Shader *entitiesShader)
             DrawTexture(world->groundTexture, x * TILE_SIZE, y * TILE_SIZE, world->tiles[y][x]);
         }
     }
-    for (int i = 0; i < world->width * world->height; i++)
+    for (const auto &elemental : world->elementals)
     {
-        auto elemental = world->elementals[i];
+
         if (elemental.type == ElementalType::Fire)
         {
             if (elemental.status == ElementalStatus::Grabbed)

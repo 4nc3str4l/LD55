@@ -145,7 +145,7 @@ World* InGameScene::GetWorld(int level) {
             std::string worldPath = "resources/worlds/level_" + levelStr + "_ground.csv";
             std::string entitiesPath = "resources/worlds/level_" + levelStr + "_entities.csv";
             std::string tutorialPath = "resources/worlds/level_" + levelStr + "_tutorial.txt";
-            return LoadWorld(worldPath, entitiesPath, tutorialPath);
+            return LoadWorld(level, worldPath, entitiesPath, tutorialPath);
         }
     }
     return nullptr;

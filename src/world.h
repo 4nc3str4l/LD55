@@ -8,24 +8,25 @@
 #define TILE_SIZE 32.0f
 #define HALF_TILE_SIZE 16.0f
 
-inline auto dry_color = Color{233, 178, 86, 255 };
-inline auto grass_color = Color{ 0, 255, 115, 255 };
-inline auto snow_color = Color{ 240, 240, 240, 255 };
+inline auto dry_color = Color{233, 178, 86, 255};
+inline auto grass_color = Color{0, 255, 115, 255};
+inline auto snow_color = Color{240, 240, 240, 255};
 
 inline auto dry_range = Vector2{0.0f, 0.3f};
 inline auto grass_range = Vector2{0.3f, 0.7f};
 inline auto snow_range = Vector2{0.7f, 1.0f};
 
-std::vector<std::vector<int>> LoadDataMatrix(const std::string& path, int& width, int& height);
+std::vector<std::vector<int>> LoadDataMatrix(const std::string &path, int &width, int &height);
 
 inline constexpr int TIMES_INTIL_MOVEMENT_RADIUS_INCRESES = 20;
 
-struct RegisteredWorld 
+struct RegisteredWorld
 {
     int level;
 };
 
-enum class ElementalType {
+enum class ElementalType
+{
     None = 0,
     Fire = 1,
     Ice = 2,
@@ -33,7 +34,8 @@ enum class ElementalType {
     Count
 };
 
-enum class TileType {
+enum class TileType
+{
     None = -1,
     Dry = 0,
     Grass = 1,
@@ -42,7 +44,8 @@ enum class TileType {
     Count
 };
 
-enum class EntityType {
+enum class EntityType
+{
     Player = 1,
     FireElemental = 2,
     IceElemental = 3,
@@ -53,14 +56,16 @@ enum class EntityType {
     Count
 };
 
-enum class ElementalStatus {
+enum class ElementalStatus
+{
     Idle = 0,
     Moving = 1,
     Grabbed = 2,
     Count
 };
 
-enum class PlayerStatus {
+enum class PlayerStatus
+{
     Idle = 0,
     Moving = 1,
     Grabbing = 2,
@@ -68,8 +73,9 @@ enum class PlayerStatus {
     Count
 };
 
-struct Player {
-    Vector2 position = { 100, 100 };
+struct Player
+{
+    Vector2 position = {100, 100};
     float speed = 300.0f;
     PlayerStatus status = PlayerStatus::Moving;
 };
@@ -85,25 +91,28 @@ struct Elemental
     ElementalStatus status = ElementalStatus::Moving;
 };
 
-enum class GameStatus {
+enum class GameStatus
+{
     Starting = 0,
     Playing = 1,
     GameOver = 2,
     LevelComplete = 2,
 };
 
-
-struct TutorialText {
+struct TutorialText
+{
     Vector2 position;
     bool isUi = true;
     std::string text;
 };
 
-struct Block {
+struct Block
+{
     Vector2 position;
 };
 
-struct World {
+struct World
+{
     int currentLevel = 1;
     int width = 0;
     int height = 0;
@@ -136,11 +145,12 @@ struct World {
     ParticleSystem particleSystem;
 };
 
-World* LoadWorld(const std::string &worldPath,
-                const std::string &entitiesPath,
-                const std::string &tutorialPath);
-void DeleteWorld(World* world);
+World *LoadWorld(int level,
+                 const std::string &worldPath,
+                 const std::string &entitiesPath,
+                 const std::string &tutorialPath);
+void DeleteWorld(World *world);
 std::vector<TutorialText> LoadTutorialText(const std::string &path);
-void RenderWorld(World *world, Shader* distortionShader, Shader* entitiesShader);
+void RenderWorld(World *world, Shader *distortionShader, Shader *entitiesShader);
 void UpdateWorld(World *world, float deltaTime);
 Vector2 GetTilePosition(const Vector2 &position);
