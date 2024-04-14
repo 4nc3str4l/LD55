@@ -1,4 +1,6 @@
 # Comments are accepted in this type of format
 # This is a ui text
-[w, 5, -50] Grab a staff and use your <color=0,255,0,255>mouse!</color>
-[w, 45, 270] Now you are in <color=0,255,0,255>Control</color>
+[w, 5, -40] Grab a staff and use your <color=0,255,155,255>mouse</color>
+[w, 55, 270] Now you are in <color=0,255,155,255>Control</color>!
+[w, -160, 300] (Take the time <color=0,255,155,255>to experiment</color>, the <color=0,255,155,255>subtle</color> things make the <color=0,255,155,255>difference</color>.)
+
