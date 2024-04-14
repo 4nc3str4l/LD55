@@ -41,12 +41,12 @@ void SplashScene::Update(float deltaTime)
             changeSceneSheduled = true;
             Scheduler::SetTimeout([](){
                 SceneManager::GetInstance().ChangeScene("InGame");
-            }, 2.0f);
+            }, fadeTime);
         }
     }
 
     if (changeSceneSheduled) {
-        fadeOutOpacity += deltaTime;
+        fadeOutOpacity += deltaTime * 1 / fadeTime;
         if (fadeOutOpacity > 1.0f) fadeOutOpacity = 1.0f;
     }
 }

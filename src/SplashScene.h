@@ -22,6 +22,7 @@ private:
     Music backgroundMusic;
     Shader distortionShader;
     float timeElapsed = 0.0f;
+    float fadeTime = 0.5f;
 };
 
 #endif // SPLASHSCENE_H
