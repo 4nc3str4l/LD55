@@ -8,6 +8,7 @@
 #include <algorithm>
 #include "utils.h"
 #include <limits>
+#include "FxManager.h"
 
 inline const auto player_texture_path = "resources/player.png";
 inline const auto ground_texture_path = "resources/ground.png";
@@ -358,6 +359,8 @@ void RenderWorld(World *world, Shader *distortionShader, Shader *entitiesShader)
     RenderPhysics(world);
 #endif
 
+    FXManager::DrawEffectsInWorld();
+
     EndMode2D();
 
     for (const auto &tutorial : world->tutorialTexts)
@@ -366,6 +369,8 @@ void RenderWorld(World *world, Shader *distortionShader, Shader *entitiesShader)
             continue;
         DrawRichText(tutorial.text.c_str(), static_cast<int>(tutorial.position.x), static_cast<int>(tutorial.position.y), 20, WHITE);
     }
+
+    FXManager::Draw();
 }
 
 void EmitParticlesFromElementals(float deltaTime, World *world)
@@ -752,6 +757,7 @@ void UpdateWorld(World *world, float deltaTime)
     UpdateElementals(world, deltaTime);
     UpdateTileStates(world, deltaTime);
     UpdateCamera(world, deltaTime);
+    FXManager::Update(deltaTime);
 }
 
 Vector2 GetTilePosition(const Vector2 &position)
@@ -771,11 +777,15 @@ void DeleteWorld(World *world)
     UnloadTexture(world->iceElementalTexture);
     UnloadTexture(world->fireElementalCaptiveTexture);
     UnloadTexture(world->springStaffTexture);
-
+    FXManager::Cleanup();
     delete world;
 }
 
 void NotifyStateChange(World *world, Rectangle where, TileType from, TileType to)
 {
-    std::cout << "State change at: " << where.x << ", " << where.y << " from: " << static_cast<int>(from) << " to: " << static_cast<int>(to) << std::endl;
+    where.x *= TILE_SIZE;
+    where.y *= TILE_SIZE;
+    where.width *= TILE_SIZE;
+    where.height *= TILE_SIZE;
+    FXManager::AddFadeRect(where, WHITE, 0.5f, true);
 }
