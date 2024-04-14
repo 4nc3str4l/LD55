@@ -105,6 +105,10 @@
             if (event.keyCode === 32) {  // Space
                 event.preventDefault();  
             }
+            // do the same for arrow keys
+            if ([32, 37, 38, 39, 40].indexOf(event.keyCode) > -1) {
+                event.preventDefault();
+            }
         });
 
 
