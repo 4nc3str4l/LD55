@@ -3,7 +3,6 @@
 
 void FXManager::Init()
 {
-    // Load all sounds
 }
 
 void FXManager::Update(float deltaTime)
@@ -33,14 +32,6 @@ void FXManager::Update(float deltaTime)
             ++it;
         }
     }
-
-    for (auto &soundTimer : soundTimers)
-    {
-        if (soundTimer.second > 0)
-        {
-            soundTimer.second -= deltaTime;
-        }
-    }
 }
 
 void FXManager::Draw()
@@ -61,12 +52,6 @@ void FXManager::DrawEffectsInWorld()
 
 void FXManager::Cleanup()
 {
-
-    for (auto &sound : sounds)
-    {
-        UnloadSound(sound.second);
-    }
-    sounds.clear();
     fadeRects.clear();
     fadeEffectsInWorld.clear();
 }
@@ -81,22 +66,4 @@ void FXManager::AddFadeRect(Rectangle rect, Color color, float duration, bool in
     {
         fadeRects.push_back({rect, color, duration, duration});
     }
-}
-
-void FXManager::PlaySound(std::string soundFile, float volume, float pitchVariance)
-{
-    if (soundTimers[soundFile] > 0)
-    {
-        return;
-    }
-    soundTimers[soundFile] = 0.05;
-
-    if (sounds.find(soundFile) == sounds.end())
-    {
-        sounds[soundFile] = LoadSound(soundFile.c_str());
-    }
-    float pitch = 1.0f + (GetRandomValue(-100, 100) / 1000.0f) * pitchVariance;
-    SetSoundPitch(sounds[soundFile], pitch);
-    SetSoundVolume(sounds[soundFile], volume);
-    ::PlaySound(sounds[soundFile]);
 }

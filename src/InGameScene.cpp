@@ -7,6 +7,7 @@
 #include "world.h"
 #include "utils.h"
 #include "SceneManager.h"
+#include "SoundManager.h"
 
 InGameScene::InGameScene() : GameScene("InGameScene") {}
 
@@ -69,6 +70,7 @@ void InGameScene::UpdatePlaying(float deltaTime)
     if (world->springDominance >= 1.0f)
     {
         gameState = GameState::VICTORY;
+        SoundManager::PlaySound(SFX_VICTORY, 0.5f, 0.1f);
     }
     else if (world->player.mortalEntity.isDead)
     {

@@ -167,3 +167,4 @@ void RenderWorld(World *world, Shader *distortionShader, Shader *entitiesShader)
 void UpdateWorld(World *world, float deltaTime);
 Vector2 GetTilePosition(const Vector2 &position);
 void NotifyStateChange(World *world, Rectangle where, TileType from, TileType to);
+void NotifyPlayerHealthChange(World *world, float lastHealth, float newHealth);

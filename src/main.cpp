@@ -4,6 +4,7 @@
 #include "SceneManager.h"
 #include "constants.h"
 #include "Scheduler.h"
+#include "SoundManager.h"
 
 int main()
 {
@@ -16,12 +17,15 @@ int main()
     sceneManager.AddScene("InGame", std::make_shared<InGameScene>());
     sceneManager.ChangeScene("Splash");
 
+    SoundManager::Init();
+
     SetTargetFPS(60);
 
     while (!WindowShouldClose())
     {
         float deltaTime = GetFrameTime();
 
+        SoundManager::Update(deltaTime);
         Scheduler::Update(deltaTime);
 
         BeginDrawing();
@@ -37,7 +41,7 @@ int main()
     Scheduler::Clear();
 
     sceneManager.UnloadCurrentScene();
-
+    SoundManager::Cleanup();
     CloseAudioDevice();
     CloseWindow();
 

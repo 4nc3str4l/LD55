@@ -9,6 +9,7 @@
 #include "utils.h"
 #include <limits>
 #include "FxManager.h"
+#include "SoundManager.h"
 
 inline const auto player_texture_path = "resources/player.png";
 inline const auto ground_texture_path = "resources/ground.png";
@@ -146,6 +147,7 @@ World *LoadWorld(int level,
                  const std::string &entitiesPath,
                  const std::string &tutorialPath)
 {
+    FXManager::Init();
     auto world = new World();
     world->currentLevel = level;
     int width = 0;
@@ -325,7 +327,7 @@ void RenderWorld(World *world, Shader *distortionShader, Shader *entitiesShader)
         GREEN.r / 255.0f,
         GREEN.g / 255.0f,
         GREEN.b / 255.0f,
-        fmax(world->player.mortalEntity.health/world->player.mortalEntity.initialHealth, 0.05f),
+        fmax(world->player.mortalEntity.health / world->player.mortalEntity.initialHealth, 0.05f),
     };
 
     SetShaderValue(*entitiesShader, GetShaderLocation(*entitiesShader, "tint"), &tintVector, SHADER_UNIFORM_VEC4);
@@ -336,11 +338,11 @@ void RenderWorld(World *world, Shader *distortionShader, Shader *entitiesShader)
     EndShaderMode();
 
     // Draw a health bar for the player
-    if(world->player.mortalEntity.health != world->player.mortalEntity.initialHealth)
+    if (world->player.mortalEntity.health != world->player.mortalEntity.initialHealth)
     {
-        DrawRectangle(world->player.position.x -12, world->player.position.y + TILE_SIZE * 1.2f -2, 54, 10, BLACK);
-        DrawRectangle(world->player.position.x -10, world->player.position.y + TILE_SIZE * 1.2f, 50, 6, RED);
-        DrawRectangle(world->player.position.x -10, world->player.position.y + TILE_SIZE * 1.2f, 50 * world->player.mortalEntity.health / world->player.mortalEntity.initialHealth, 6, GREEN);
+        DrawRectangle(world->player.position.x - 12, world->player.position.y + TILE_SIZE * 1.2f - 2, 54, 10, BLACK);
+        DrawRectangle(world->player.position.x - 10, world->player.position.y + TILE_SIZE * 1.2f, 50, 6, RED);
+        DrawRectangle(world->player.position.x - 10, world->player.position.y + TILE_SIZE * 1.2f, 50 * world->player.mortalEntity.health / world->player.mortalEntity.initialHealth, 6, GREEN);
     }
 
 #ifdef _DEBUG
@@ -523,7 +525,7 @@ void UpdateTileStates(World *world, float deltaTime)
             if (newType != currentType)
             {
                 world->tileTypes[y][x] = newType;
-                if(world->firstTileComputed)
+                if (world->firstTileComputed)
                 {
                     NotifyStateChange(world, Rectangle{static_cast<float>(x), static_cast<float>(y), 1.0f, 1.0f}, currentType, newType);
                 }
@@ -571,6 +573,7 @@ void HandleInteractionWithElementals(World *world)
                 break;
             }
         }
+        SoundManager::PlaySound(SFX_RELEASE, 0.3f, 0.1f);
     }
 
     else
@@ -598,6 +601,7 @@ void HandleInteractionWithElementals(World *world)
         {
             closestElemental->status = ElementalStatus::Grabbed;
             world->player.status = PlayerStatus::Grabbing;
+            SoundManager::PlaySound(SFX_GRAB, 0.3f, 0.1f);
         }
     }
 }
@@ -610,10 +614,13 @@ void UpdatePlayerHealth(World *world, float deltaTime)
     world->player.mortalEntity.nextHealthCheck -= deltaTime;
     if (world->player.mortalEntity.nextHealthCheck <= 0.0f)
     {
-        
+
         world->player.mortalEntity.nextHealthCheck = world->player.mortalEntity.checkRate;
         // if the player is on a non grass tile, decrease health
         // else increase health
+
+        float lastHealth = world->player.mortalEntity.health;
+
         if (world->tileTypes[static_cast<int>(world->player.position.y / TILE_SIZE)][static_cast<int>(world->player.position.x / TILE_SIZE)] != TileType::Grass)
         {
             world->player.mortalEntity.health -= world->player.mortalEntity.damageRate;
@@ -630,6 +637,11 @@ void UpdatePlayerHealth(World *world, float deltaTime)
         else if (world->player.mortalEntity.health > world->player.mortalEntity.initialHealth)
         {
             world->player.mortalEntity.health = world->player.mortalEntity.initialHealth;
+        }
+
+        if (lastHealth != world->player.mortalEntity.health)
+        {
+            NotifyPlayerHealthChange(world, lastHealth, world->player.mortalEntity.health);
         }
     }
 }
@@ -668,7 +680,7 @@ void UpdatePlayer(World *world, float deltaTime)
     }
 
     float movementSpeed = world->player.speed * deltaTime;
-    
+
     Vector2 newPositionX = {
         world->player.position.x + directionX * movementSpeed,
         world->player.position.y};
@@ -788,4 +800,66 @@ void NotifyStateChange(World *world, Rectangle where, TileType from, TileType to
     where.width *= TILE_SIZE;
     where.height *= TILE_SIZE;
     FXManager::AddFadeRect(where, WHITE, 0.5f, true);
+
+    switch (to)
+    {
+    case TileType::Dry:
+        SoundManager::PlaySound(SFX_DRY, 0.3f, 0.1f);
+        break;
+    case TileType::Grass:
+        SoundManager::PlaySound(SFX_GRASS, 0.3f, 0.1f);
+        break;
+    case TileType::Snow:
+        SoundManager::PlaySound(SFX_FREEZE, 0.3f, 0.1f);
+        break;
+    case TileType::Block:
+        break;
+    }
+}
+
+void EmitParticlesAroundPlayer(World *w, Vector2 playerPosition, int numParticles, float particleRadius, Color color, float lifeTime, bool from)
+{
+    float angle, distance, speed;
+    Vector2 emitPosition, velocity;
+
+    for (int i = 0; i < numParticles; i++)
+    {
+        angle = GetRandomValue(0, 360) * DEG2RAD;
+        distance = GetRandomValue(10, 50);
+
+        emitPosition.x = playerPosition.x + cos(angle) * distance;
+        emitPosition.y = playerPosition.y + sin(angle) * distance;
+
+        speed = GetRandomValue(200, 400) / 100.0f;
+
+        if (from)
+        {
+            velocity.x = (emitPosition.x - playerPosition.x) * speed;
+            velocity.y = (emitPosition.y - playerPosition.y) * speed;
+        }
+        else
+        {
+            velocity.x = (playerPosition.x - emitPosition.x) * speed;
+            velocity.y = (playerPosition.y - emitPosition.y) * speed;
+        }
+
+        w->particleSystem.Emit(emitPosition, velocity, particleRadius, color, lifeTime);
+    }
+}
+
+void NotifyPlayerHealthChange(World *world, float lastHealth, float newHealth)
+{
+    Vector2 centeredPlayerPos = Vector2{world->player.position.x + 10, world->player.position.y};
+    if (newHealth < lastHealth)
+    {
+        FXManager::AddFadeRect(Rectangle{0, 0, static_cast<float>(GetScreenWidth()), static_cast<float>(GetScreenHeight())}, RED, 0.025f, false);
+        EmitParticlesAroundPlayer(world, centeredPlayerPos, 10, 2.0f, RED, 0.7f, true);
+        SoundManager::PlaySound(SFX_HIT, 0.3f, 0.1f);
+    }
+    else
+    {
+        // FXManager::AddFadeRect(Rectangle{0, 0, static_cast<float>(GetScreenWidth()), static_cast<float>(GetScreenHeight())}, GREEN, 0.025f, false);
+        EmitParticlesAroundPlayer(world, centeredPlayerPos, 10, 3.0f, GREEN, 0.7f, false);
+        SoundManager::PlaySound(SFX_HEAL, 0.3f, 0.1f);
+    }
 }

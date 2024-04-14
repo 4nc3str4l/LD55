@@ -4,7 +4,6 @@
 
 #include "raylib.h"
 #include <vector>
-#include <unordered_map>
 #include <string>
 
 struct FadeRectangle
@@ -20,8 +19,6 @@ class FXManager
 private:
     inline static std::vector<FadeRectangle> fadeRects;
     inline static std::vector<FadeRectangle> fadeEffectsInWorld;
-    inline static std::unordered_map<std::string, Sound> sounds;
-    inline static std::unordered_map<std::string, float> soundTimers;
 
 public:
     static void Init();
@@ -29,7 +26,6 @@ public:
     static void Draw();
     static void DrawEffectsInWorld();
     static void AddFadeRect(Rectangle rect, Color color, float duration, bool);
-    static void PlaySound(std::string soundFile, float volume, float pitchVariance);
     static void Cleanup();
 };
 
