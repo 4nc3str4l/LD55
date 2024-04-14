@@ -49,7 +49,7 @@ private:
     Texture2D background;
 
     std::vector<RegisteredWorld> registeredWorlds;
-    size_t currentLevel = 1;
+    size_t currentLevel = 2;
 };
 
 #endif // INGAMESCENE_H

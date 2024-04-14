@@ -154,6 +154,7 @@ World* InGameScene::GetWorld(int level) {
 void InGameScene::Load() 
 {
     RegisterWorld(1);
+    RegisterWorld(2);
 
     this->world = GetWorld(currentLevel);
 
