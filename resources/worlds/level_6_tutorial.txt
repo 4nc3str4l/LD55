@@ -1,8 +1,8 @@
 # Comments are accepted in this type of format
 # This is a ui text
-[u, 380, 120] Not too <color=233,178,86,255>DRY</color> not to <color=0,0,200,255>COLD</color>
-[u, 240, 150] sometimes there are things that cannot be <color=255,0,0,255>UNDONE</color>...
+[w, 205, -80] Not too <color=255,0,0,255>HOT</color> not to <color=0,0,200,255>COLD</color>
+[w, 50, -40] Sometimes there are things that cannot be <color=255,0,0,255>UNDONE</color>...
 
 
-[w, 120, 220] Press <color=255,0,0,255> [R] </color> to restart when you are blocked
+[w, 110, 210] Press <color=255,0,0,255> [R] </color> to restart if you are blocked...
 
