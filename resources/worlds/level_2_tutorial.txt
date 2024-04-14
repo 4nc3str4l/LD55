@@ -4,5 +4,6 @@
 [u, 250, 160] Place the <color=0,255,155,255>spring staff</color> in the <color=233,178,86,255>dry</color> and <color=240,240,240,255>ice</color> zones
 
 # This is a world text
-[w, 100, 200] Move with <color=0,255,155,255>WASD</color> or use <color=0,255,155,255>ARROW KEYS</color>
-[w, 100, 250] <color=0,255,155,255>[SPACE]</color> to <color=0,255,155,255>GRAB/RELEASE</color> objects or elementals.
+[u, 250, 400] <color=255,0,0,255>BE CAREFULL</color> being in <color=233,178,86,255>dry</color> or <color=240,240,240,255>ice</color> zones will <color=255,0,0,255>Hurt</color> you!
+[u, 280, 450]  (Go go <color=0,255,155,255>GRASS ZONES </color> to <color=0,255,155,255>RECOVER</color>)
+

@@ -55,6 +55,9 @@ void InGameScene::DrawInGameUI(const World *world)
                       world->springDominance, 225, 15);
     // Print the level where we are
     DrawText(FormatText("Level: %i", world->currentLevel).c_str(), SCREEN_WIDTH - 100, 15, 20, WHITE);
+
+    // Show the surender option on the top bar
+    DrawRichText("Press <color=200,0,0,255>[R]</color> to restart", SCREEN_WIDTH - 400, 15, 20, WHITE);
 }
 
 void InGameScene::UpdatePlaying(float deltaTime)
@@ -70,6 +73,13 @@ void InGameScene::UpdatePlaying(float deltaTime)
     else if (world->player.mortalEntity.isDead)
     {
         gameState = GameState::GAME_OVER;
+    }
+
+    if(IsKeyDown(KEY_R))
+    {
+        DeleteWorld(world);
+        world = GetWorld(currentLevel);
+        gameState = GameState::STARTING;
     }
 
     EnableVolumeOptions(false);
@@ -164,7 +174,7 @@ void InGameScene::DrawVictoryUI()
 
 void InGameScene::UpdateVictory(float deltaTime)
 {
-    if (IsKeyReleased(KEY_N) && currentLevel < registeredWorlds.size())
+    if (IsKeyDown(KEY_N) && currentLevel < registeredWorlds.size())
     {
         currentLevel++;
         DeleteWorld(world);
@@ -172,14 +182,14 @@ void InGameScene::UpdateVictory(float deltaTime)
         gameState = GameState::PLAYING;
     }
 
-    if (IsKeyReleased(KEY_R))
+    if (IsKeyDown(KEY_R))
     {
         DeleteWorld(world);
         world = GetWorld(currentLevel);
         gameState = GameState::PLAYING;
     }
 
-    if (IsKeyReleased(KEY_M) && currentLevel >= registeredWorlds.size())
+    if (IsKeyDown(KEY_M) && currentLevel >= registeredWorlds.size())
     {
         SceneManager::GetInstance().ChangeScene("Splash");
     }
@@ -212,11 +222,12 @@ World *InGameScene::GetWorld(int level)
 
 void InGameScene::Load()
 {
-    gameState = GameState::VICTORY;
-    currentLevel = 2;
+    gameState = GameState::STARTING;
+    currentLevel = 3;
 
     RegisterWorld(1);
     RegisterWorld(2);
+    RegisterWorld(3);
 
     this->world = GetWorld(currentLevel);
 
@@ -231,9 +242,6 @@ void InGameScene::Load()
     PlayMusicStream(music);
 
     background = LoadTexture("resources/splash.png");
-
-
-
 }
 
 void InGameScene::Update(float deltaTime)
