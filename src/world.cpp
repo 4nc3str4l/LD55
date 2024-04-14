@@ -7,6 +7,7 @@
 #include "raymath.h"
 #include <algorithm>
 #include "utils.h"
+#include <limits>
 
 inline const auto player_texture_path = "resources/player.png";
 inline const auto ground_texture_path = "resources/ground.png";
@@ -524,7 +525,7 @@ void HandleInteractionWithElementals(World *world)
 
     else
     {
-        float closestDistance = 100000000.0f;
+        float closestDistance = std::numeric_limits<float>::max();
         Elemental *closestElemental = nullptr;
         for (auto &elemental : world->elementals)
         {
