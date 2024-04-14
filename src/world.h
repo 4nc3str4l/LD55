@@ -20,6 +20,11 @@ std::vector<std::vector<int>> LoadDataMatrix(const std::string& path, int& width
 
 inline constexpr int TIMES_INTIL_MOVEMENT_RADIUS_INCRESES = 4;
 
+struct RegisteredWorld 
+{
+    int level;
+};
+
 enum class ElemetalType {
     None = 0,
     Fire = 1,

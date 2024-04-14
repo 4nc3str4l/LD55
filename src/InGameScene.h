@@ -3,9 +3,11 @@
 
 #include "GameScene.h"
 #include "raylib.h"
-struct World;
+#include <vector>   
+#include "world.h"
 
-enum class GameState {
+enum class GameState 
+{
     STARTING,
     PLAYING,
     IN_MENU,
@@ -33,6 +35,10 @@ private:
     void UpdateGameOver(float deltaTime);
     void UpdateVictory(float deltaTime);
     void UpdateInMenuUI(float deltaTime);
+
+    void RegisterWorld(int level);
+    World* GetWorld(int level);
+
 private:
     World* world;
     Shader distortionShader;
@@ -41,6 +47,12 @@ private:
     Music music;
     GameState gameState = GameState::STARTING;
     Texture2D background;
+
+    std::vector<RegisteredWorld> registeredWorlds;
+    int currentLevel = 1;
+
+    
+
 };
 
 #endif // INGAMESCENE_H

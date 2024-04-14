@@ -120,11 +120,24 @@ void InGameScene::DrawInMenuUI(World* world)
     DrawInGameUI(world);
 }
 
-void InGameScene::Load() {
-    World* w = LoadWorld("resources/worlds/level_1_ground.csv",
-                    "resources/worlds/level_1_entities.csv",
-                    "resources/worlds/level_1_tutorial.txt");
-    this->world = w;
+World* InGameScene::GetWorld(int level) {
+    for (auto &w : registeredWorlds) {
+        if (w.level == level) {
+            std::string levelStr = std::to_string(level);
+            std::string worldPath = "resources/worlds/level_" + levelStr + "_ground.csv";
+            std::string entitiesPath = "resources/worlds/level_" + levelStr + "_entities.csv";
+            std::string tutorialPath = "resources/worlds/level_" + levelStr + "_tutorial.txt";
+            return LoadWorld(worldPath, entitiesPath, tutorialPath);
+        }
+    }
+    return nullptr;
+}
+
+void InGameScene::Load() 
+{
+    RegisterWorld(1);
+
+    this->world = GetWorld(currentLevel);
 
     distortionShader = LoadDistorionShader();
     float resolution[2] = {(float)GetScreenWidth(), (float)GetScreenHeight()};
@@ -188,6 +201,10 @@ void InGameScene::Render()
         DrawVictoryUI();
         break;
     }
+}
+
+void InGameScene::RegisterWorld(int level) {
+    registeredWorlds.push_back({level});
 }
 
 void InGameScene::Unload() {
