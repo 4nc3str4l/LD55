@@ -40,6 +40,7 @@ private:
     float timeElapsed = 0.0f;
     Music music;
     GameState gameState = GameState::STARTING;
+    Texture2D background;
 };
 
 #endif // INGAMESCENE_H

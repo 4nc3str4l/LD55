@@ -9,6 +9,7 @@
 
 InGameScene::InGameScene() : GameScene("In-Game Scene") {}
 
+
 void DrawFormattedText(int springTiles, int totalTiles, float percentage, int posX, int posY) {
     std::ostringstream ss;
 
@@ -22,8 +23,15 @@ void DrawFormattedText(int springTiles, int totalTiles, float percentage, int po
 
 void InGameScene::DrawStartingUI() 
 {
-    float richTextSize = MeasureText("Press [Enter] to start", 20);
-    DrawRichText("Press <color=0,255,0,255> [Enter] </color> to start", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2, 20, WHITE);
+
+    DrawTexture(background, 0, 0, WHITE);
+    BeginShaderMode(distortionShader);
+        DrawTexture(background, 0, 0, WHITE);
+    EndShaderMode();
+    DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Fade(BLACK, 0.9f));
+
+    float richTextSize = MeasureText("Press [Enter] to summon the spring guardian", 20);
+    DrawRichText("Press <color=0,255,0,255> [Enter] </color> to summon the spring guardian", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2, 20, WHITE);
 }
 
 void InGameScene::UpdateStarting(float delta)
@@ -49,10 +57,6 @@ void InGameScene::DrawInGameUI(const World *world)
 
 void InGameScene::UpdatePlaying(float deltaTime)
 {
-    if(timeElapsed > 10000.0f) {
-        timeElapsed = 0.0f;
-    }
-    SetShaderValue(distortionShader, GetShaderLocation(distortionShader, "time"), &timeElapsed, SHADER_UNIFORM_FLOAT);
     SetShaderValue(entitiesShader, GetShaderLocation(entitiesShader, "time"), &timeElapsed, SHADER_UNIFORM_FLOAT);
     UpdateWorld(world, deltaTime);
     SetMusicVolume(music, world->springDominance * 0.4f);
@@ -131,11 +135,19 @@ void InGameScene::Load() {
 
     music = LoadMusicStream("resources/in_game_music.mp3");
     PlayMusicStream(music);
+
+    background = LoadTexture("resources/splash.png");
 }
 
 void InGameScene::Update(float deltaTime) {
     UpdateMusicStream(music);
     timeElapsed += deltaTime;
+    if(timeElapsed > 10000.0f) 
+    {
+        timeElapsed = 0.0f;
+    }
+    SetShaderValue(distortionShader, GetShaderLocation(distortionShader, "time"), &timeElapsed, SHADER_UNIFORM_FLOAT);
+    
     switch (gameState)
     {
     case GameState::STARTING:
