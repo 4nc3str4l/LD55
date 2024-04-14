@@ -173,6 +173,12 @@ World *LoadWorld(int level,
     world->iceElementalCaptiveTexture = GetTextureFromPath("resources/ice_elemental_captive.png");
     world->blockTexture = GetTextureFromPath("resources/block.png");
 
+    world->fireStaffTexture = GetTextureFromPath("resources/fire_staff.png");
+    world->iceStaffTexture = GetTextureFromPath("resources/ice_staff.png");
+
+    world->fireGemTexture = GetTextureFromPath("resources/fire_gem.png");
+    world->iceGemTexture = GetTextureFromPath("resources/ice_gem.png");
+
     int numBlocks = 0;
     for (int y = 0; y < world->height; y++)
     {
@@ -237,6 +243,24 @@ World *LoadWorld(int level,
             else if (entity == 4)
             {
                 auto elemental = Elemental{position, ElementalType::Spring};
+                elemental.movementRadius = 0;
+                elemental.timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES;
+                elemental.ChoosenPosition = position;
+                elemental.speed = 0.0f;
+                world->elementals.emplace_back(elemental);
+            }
+            else if (entity == 5)
+            {
+                auto elemental = Elemental{position, ElementalType::FireStaff};
+                elemental.movementRadius = 0;
+                elemental.timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES;
+                elemental.ChoosenPosition = position;
+                elemental.speed = 0.0f;
+                world->elementals.emplace_back(elemental);
+            }
+            else if (entity == 6)
+            {
+                auto elemental = Elemental{position, ElementalType::IceStaff};
                 elemental.movementRadius = 0;
                 elemental.timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES;
                 elemental.ChoosenPosition = position;
@@ -322,6 +346,24 @@ void RenderWorld(World *world, Shader *distortionShader, Shader *entitiesShader)
             DrawTexture(world->springStaffTexture, elemental.position.x - TILE_SIZE / 2, elemental.position.y - TILE_SIZE, WHITE);
             EndShaderMode();
         }
+        else if (elemental.type == ElementalType::FireStaff)
+        {
+            BeginShaderMode(*entitiesShader);
+            Vector4 tintVector = {
+                1, 1, 1, 1};
+            SetShaderValue(*entitiesShader, GetShaderLocation(*entitiesShader, "tint"), &tintVector, SHADER_UNIFORM_VEC4);
+            DrawTexture(world->fireStaffTexture, elemental.position.x - TILE_SIZE / 2, elemental.position.y - TILE_SIZE, WHITE);
+            EndShaderMode();
+        }
+        else if (elemental.type == ElementalType::IceStaff)
+        {
+            BeginShaderMode(*entitiesShader);
+            Vector4 tintVector = {
+                1, 1, 1, 1};
+            SetShaderValue(*entitiesShader, GetShaderLocation(*entitiesShader, "tint"), &tintVector, SHADER_UNIFORM_VEC4);
+            DrawTexture(world->iceStaffTexture, elemental.position.x - TILE_SIZE / 2, elemental.position.y - TILE_SIZE, WHITE);
+            EndShaderMode();
+        }
     }
 
     world->particleSystem.Draw();
@@ -340,13 +382,14 @@ void RenderWorld(World *world, Shader *distortionShader, Shader *entitiesShader)
     DrawRectangle(GetPlayerCenter(world).x - 2, GetPlayerCenter(world).y - 2, 4, 4, RED);
 #endif
 
-
     for (const auto &tutorial : world->tutorialTexts)
     {
         if (tutorial.isUi)
             continue;
         DrawRichText(tutorial.text.c_str(), static_cast<int>(tutorial.position.x), static_cast<int>(tutorial.position.y), 20, WHITE);
     }
+
+    RenderGrabbingStaff(world, entitiesShader);
 
     FXManager::DrawEffectsInWorld();
 
@@ -362,6 +405,64 @@ void RenderWorld(World *world, Shader *distortionShader, Shader *entitiesShader)
     FXManager::Draw();
 }
 
+void RenderGrabbingStaff(World *world, Shader *entitiesShader)
+{
+    if (!world->grabbingFireStaff && !world->grabbingIceStaff)
+        return;
+
+    Vector2 mousePosition = GetMousePosition();
+    Vector2 worldMousePos = GetScreenToWorld2D(mousePosition, world->camera);
+
+    Texture2D *gem = nullptr;
+    auto playerCenter = GetPlayerCenter(world);
+    if (world->grabbingFireStaff)
+    {
+        gem = &world->fireGemTexture;
+        for (auto &elemental : world->elementals)
+        {
+            if (elemental.type == ElementalType::Fire)
+            {
+                for (int i = 0; i < 3; ++i)
+                {
+                    if (GetRandomFloat(0.0f, 1.0f) > 0.5f)
+                    {
+                        Color subtleWhite = Fade(RED, 0.5f);
+                        world->particleSystem.Emit(worldMousePos, Vector2Subtract(elemental.position, worldMousePos), 5.0f, subtleWhite, 1.0f);
+                    }
+                }
+                elemental.ChoosenPosition = worldMousePos;
+            }
+        }
+    }
+    else if (world->grabbingIceStaff)
+    {
+        gem = &world->iceGemTexture;
+        for (auto &elemental : world->elementals)
+        {
+            if (elemental.type == ElementalType::Ice)
+            {
+                for (int i = 0; i < 3; ++i)
+                {
+                    if (GetRandomFloat(0.0f, 1.0f) > 0.5f)
+                    {
+                        Color subtleWhite = Fade(WHITE, 0.5f);
+                        world->particleSystem.Emit(worldMousePos, Vector2Subtract(elemental.position, worldMousePos), 5.0f, subtleWhite, 1.0f);
+                    }
+                }
+                elemental.ChoosenPosition = worldMousePos;
+            }
+        }
+    }
+
+    BeginShaderMode(*entitiesShader);
+    Vector4 tintVector = {1, 1, 1, 1};
+    SetShaderValue(*entitiesShader, GetShaderLocation(*entitiesShader, "tint"), &tintVector, SHADER_UNIFORM_VEC4);
+    auto pos = Vector2{worldMousePos.x - 7, worldMousePos.y - 7};
+    DrawTexture(*gem, pos.x, pos.y, WHITE);
+    world->gemPosition = pos;
+    EndShaderMode();
+}
+
 void EmitParticlesFromElementals(float deltaTime, World *world)
 {
     static float particleTimer = 0.0f;
@@ -373,7 +474,10 @@ void EmitParticlesFromElementals(float deltaTime, World *world)
 
         for (auto &elemental : world->elementals)
         {
-            if (elemental.type == ElementalType::None || elemental.status == ElementalStatus::Grabbed)
+            if (elemental.type == ElementalType::None ||
+                elemental.type == ElementalType::FireStaff ||
+                elemental.type == ElementalType::IceStaff ||
+                elemental.status == ElementalStatus::Grabbed)
                 continue;
             auto randomValue = GetRandomFloat(0.0f, 1.0f);
             if (randomValue > 0.5f)
@@ -557,7 +661,9 @@ void HandleInteractionWithElementals(World *world)
         {
             if (elemental.type != ElementalType::Fire &&
                 elemental.type != ElementalType::Ice &&
-                elemental.type != ElementalType::Spring)
+                elemental.type != ElementalType::Spring &&
+                elemental.type != ElementalType::FireStaff &&
+                elemental.type != ElementalType::IceStaff)
                 continue;
 
             if (elemental.status == ElementalStatus::Grabbed)
@@ -570,6 +676,15 @@ void HandleInteractionWithElementals(World *world)
 
                 elemental.position.x = playerCenter.x;
                 elemental.position.y = playerCenter.y;
+
+                if (elemental.type == ElementalType::FireStaff)
+                {
+                    world->grabbingFireStaff = false;
+                }
+                else if (elemental.type == ElementalType::IceStaff)
+                {
+                    world->grabbingIceStaff = false;
+                }
                 break;
             }
         }
@@ -585,8 +700,11 @@ void HandleInteractionWithElementals(World *world)
         {
             if (elemental.type != ElementalType::Fire &&
                 elemental.type != ElementalType::Ice &&
-                elemental.type != ElementalType::Spring)
+                elemental.type != ElementalType::Spring &&
+                elemental.type != ElementalType::FireStaff &&
+                elemental.type != ElementalType::IceStaff)
                 continue;
+
             float distance = Vector2Distance(playerCenter, elemental.position);
             if (distance < TILE_SIZE * 1.5f && elemental.status == ElementalStatus::Moving)
             {
@@ -603,6 +721,15 @@ void HandleInteractionWithElementals(World *world)
             closestElemental->status = ElementalStatus::Grabbed;
             world->player.status = PlayerStatus::Grabbing;
             SoundManager::PlaySound(SFX_GRAB, 0.3f, 0.1f);
+
+            if (closestElemental->type == ElementalType::FireStaff)
+            {
+                world->grabbingFireStaff = true;
+            }
+            else if (closestElemental->type == ElementalType::IceStaff)
+            {
+                world->grabbingIceStaff = true;
+            }
         }
     }
 }
@@ -740,6 +867,28 @@ void UpdateElementals(World *world, float deltaTime)
             continue;
         }
 
+        if (world->grabbingIceStaff)
+        {
+            if (elemental.type == ElementalType::Ice)
+            {
+                // Go to the gem position
+                auto moovement = Vector2Subtract(world->gemPosition, elemental.position);
+                float distance = Vector2Length(moovement);
+                elemental.position = Vector2Add(elemental.position, Vector2Scale(Vector2Normalize(moovement), std::min(elemental.speed * deltaTime, distance)));
+                continue;
+            }
+        }
+        else if (world->grabbingFireStaff)
+        {
+            if (elemental.type == ElementalType::Fire)
+            {
+                auto moovement = Vector2Subtract(world->gemPosition, elemental.position);
+                float distance = Vector2Length(moovement);
+                elemental.position = Vector2Add(elemental.position, Vector2Scale(Vector2Normalize(moovement), std::min(elemental.speed * deltaTime, distance)));
+                continue;
+            }
+        }
+
         Vector2 direction = Vector2Subtract(elemental.ChoosenPosition, elemental.position);
         float distance = Vector2Length(direction);
 
@@ -797,6 +946,10 @@ void DeleteWorld(World *world)
     UnloadTexture(world->fireElementalCaptiveTexture);
     UnloadTexture(world->springStaffTexture);
     UnloadTexture(world->blockTexture);
+    UnloadTexture(world->fireStaffTexture);
+    UnloadTexture(world->iceStaffTexture);
+    UnloadTexture(world->fireGemTexture);
+    UnloadTexture(world->iceGemTexture);
     FXManager::Cleanup();
     delete world;
 }

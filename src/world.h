@@ -31,6 +31,8 @@ enum class ElementalType
     Fire = 1,
     Ice = 2,
     Spring = 3,
+    FireStaff = 4,
+    IceStaff = 5,
     Count
 };
 
@@ -50,9 +52,8 @@ enum class EntityType
     FireElemental = 2,
     IceElemental = 3,
     SpringElemental = 4,
-    SpringTotem = 5,
-    SummerTotem = 6,
-    WinterTotem = 7,
+    FireStaff = 5,
+    IceStaff = 6,
     Count
 };
 
@@ -138,7 +139,13 @@ struct World
 
     Texture2D playerTexture{};
     Texture2D groundTexture{};
+
     Texture2D springStaffTexture{};
+    Texture2D fireStaffTexture{};
+    Texture2D iceStaffTexture{};
+
+    Texture2D fireGemTexture{};
+    Texture2D iceGemTexture{};
 
     Texture2D fireElementalTexture{};
     Texture2D iceElementalTexture{};
@@ -156,6 +163,11 @@ struct World
 
     ParticleSystem particleSystem;
     bool firstTileComputed = false;
+
+    bool grabbingFireStaff = false;
+    bool grabbingIceStaff = false;
+
+    Vector2 gemPosition = {0, 0};
 };
 
 World *LoadWorld(int level,
@@ -170,3 +182,5 @@ Vector2 GetTilePosition(const Vector2 &position);
 void NotifyStateChange(World *world, Rectangle where, TileType from, TileType to);
 void NotifyPlayerHealthChange(World *world, float lastHealth, float newHealth);
 Vector2 GetPlayerCenter(World* world);
+
+void RenderGrabbingStaff(World* world, Shader *entitiesShader);
