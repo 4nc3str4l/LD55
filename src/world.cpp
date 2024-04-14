@@ -414,7 +414,6 @@ void RenderGrabbingStaff(World *world, Shader *entitiesShader)
     Vector2 worldMousePos = GetScreenToWorld2D(mousePosition, world->camera);
 
     Texture2D *gem = nullptr;
-    auto playerCenter = GetPlayerCenter(world);
     if (world->grabbingFireStaff)
     {
         gem = &world->fireGemTexture;
@@ -974,6 +973,8 @@ void NotifyStateChange(World *world, Rectangle where, TileType from, TileType to
         SoundManager::PlaySound(SFX_FREEZE, 0.3f, 0.1f);
         break;
     case TileType::Block:
+        break;
+    default:
         break;
     }
 }
