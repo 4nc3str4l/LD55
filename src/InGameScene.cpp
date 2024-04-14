@@ -31,7 +31,7 @@ void InGameScene::DrawStartingUI()
     DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Fade(BLACK, 0.9f));
 
     float richTextSize = MeasureText("Press [Enter] to summon the spring guardian", 20);
-    DrawRichText("Press <color=0,255,0,255> [Enter] </color> to summon the spring guardian", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2, 20, WHITE);
+    DrawRichText("Press <color=0,255,155,255> [Enter] </color> to summon the spring guardian", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2, 20, WHITE);
 }
 
 void InGameScene::UpdateStarting(float delta)
@@ -94,7 +94,7 @@ void InGameScene::DrawGameOverUI()
     float richTextSize = MeasureText("Spring won't come this year...", 20);
 
     richTextSize = MeasureText("Press [R] if it is NOT OVER yet!", 20);
-    DrawRichText("Press <color=0,255,0,255> [R] </color> if it is <color=0,255,0,255>NOT OVER</color> yet!", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 60, 20, WHITE);
+    DrawRichText("Press <color=0,255,155,255> [R] </color> if it is <color=0,255,155,255>NOT OVER</color> yet!", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 60, 20, WHITE);
 
     richTextSize = MeasureText("Press [M] to return to the main menu", 20);
     DrawRichText("Press <color=150,0,0,255> [M] </color> to return to the main menu", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 120, 20, WHITE);
@@ -123,13 +123,13 @@ void InGameScene::DrawVictoryUI()
     EndShaderMode();
 
     DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Fade(BLACK, 0.9f));
-    DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Fade(GREEN, 0.2f));
+    DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Fade(GREEN, 0.1f));
 
     float victoryTextSize = MeasureText("Victory!", 40);
-    DrawRichText("<color=0,255,0,255>Victory!</color>", SCREEN_WIDTH / 2 - victoryTextSize / 2, 150, 40, WHITE);
+    DrawRichText("<color=0,255,155,255>Victory!</color>", SCREEN_WIDTH / 2 - victoryTextSize / 2, 150, 40, WHITE);
 
     float explaationSize = MeasureText("Spring HAS come!", 25);
-    DrawRichText("Spring <color=0,255,0,255>HAS</color> come!", SCREEN_WIDTH / 2 - explaationSize / 2, 220, 25, WHITE);
+    DrawRichText("Spring <color=0,255,155,255>HAS</color> come!", SCREEN_WIDTH / 2 - explaationSize / 2, 220, 25, WHITE);
 
     float richTextSize = 0;
 
@@ -137,12 +137,12 @@ void InGameScene::DrawVictoryUI()
     if (currentLevel < registeredWorlds.size())
     {
         richTextSize = MeasureText("Press [N] to continue to the next level", 20);
-        DrawRichText("Press <color=0,255,0,255> [N] </color> to continue to the next level", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 60, 20, WHITE);
+        DrawRichText("Press <color=0,255,155,255> [N] </color> to continue to the next level", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 60, 20, WHITE);
     }
     else
     {
         richTextSize = MeasureText("Congratulations you finsihed the game!!", 20);
-        DrawRichText("Congratulations you <color=0,255,0,255>finsihed</color> the game!!", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 60, 20, WHITE);
+        DrawRichText("Congratulations you <color=0,255,155,255>finsihed</color> the game!!", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 60, 20, WHITE);
 
         richTextSize = MeasureText("Press [M] to return to the main menu", 20);
         DrawRichText("Press <color=150,0,0,255> [M] </color> to return to the main menu", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 120, 20, WHITE);
@@ -150,7 +150,7 @@ void InGameScene::DrawVictoryUI()
 
     // Show repeat level message
     richTextSize = MeasureText("Press [R] to repeat the level", 20);
-    DrawRichText("Press <color=0,255,0,255> [R] </color> to repeat the level", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 150, 20, WHITE);
+    DrawRichText("Press <color=0,255,155,255> [R] </color> to repeat the level", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 150, 20, WHITE);
 }
 
 void InGameScene::UpdateVictory(float deltaTime)

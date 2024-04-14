@@ -1,5 +1,5 @@
 # Comments are accepted in this type of format
 # This is a ui text
-[u, 100, 200] Use the spring token to cover the whole world in <color=0,255,0,255>GREEN</color>
+[u, 100, 200] Use the spring token to cover the whole world in <color=0,255,155,255>GREEN</color>
 # This is a world text
-[w, 100, 200] Use the spring token to cover the whole world in <color=0,255,0,255>GREEN</color>
+[w, 100, 200] Use the spring token to cover the whole world in <color=0,255,155,255>GREEN</color>
