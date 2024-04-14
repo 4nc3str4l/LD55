@@ -34,6 +34,10 @@ void InGameScene::DrawStartingUI()
     float richTextSize = MeasureText("Press [Enter] to summon the spring guardian", 20);
     DrawRichText("Press <color=0,255,155,255> [Enter] </color> to summon the spring guardian", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2, 20, WHITE);
 
+    // Offer the option to return to the main menu
+    richTextSize = MeasureText("Press [M] to return to the main menu", 20);
+    DrawRichText("Press <color=150,0,0,255> [M] </color> to return to the main menu", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 60, 20, WHITE);
+
     EnableVolumeOptions(true);
 }
 
@@ -44,6 +48,11 @@ void InGameScene::UpdateStarting(float delta)
         gameState = GameState::PLAYING;
         SoundManager::PlaySound(SFX_GRASS, 0.5f, 0.1f);
         SoundManager::PlayMusic(SoundManager::gameMusic, 0.2f);
+    }
+
+    if (IsKeyDown(KEY_M))
+    {
+        SceneManager::GetInstance().ChangeScene("Splash");
     }
 }
 
