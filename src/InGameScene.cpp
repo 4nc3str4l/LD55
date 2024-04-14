@@ -90,22 +90,40 @@ void InGameScene::UpdateGameOver(float deltaTime)
     }
 }
 
-
 void InGameScene::DrawVictoryUI() 
 {
     float victoryTextSize = MeasureText("Victory!", 40);
     DrawText("Victory!", SCREEN_WIDTH / 2 - victoryTextSize / 2, SCREEN_HEIGHT / 2 - 40, 40, WHITE);
 
+    float richTextSize = 0;
 
-    float richTextSize = MeasureText("Press [Enter] to continue", 20);
-    DrawRichText("Press <color=0,255,0,255> [Enter] </color> to continue", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2, 20, WHITE);
+    // Show next world message
+    if(currentLevel < registeredWorlds.size()) {
+        richTextSize = MeasureText("Press [N] to continue to the next level", 20);
+        DrawRichText("Press <color=0,255,0,255> [N] </color> to continue to the next level", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 60, 20, WHITE);
+    }
+
+    // Show repeat level message
+    richTextSize = MeasureText("Press [R] to repeat the level", 20);
+    DrawRichText("Press <color=0,255,0,255> [R] </color> to repeat the level", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 120, 20, WHITE);
+    
 }
 
 void InGameScene::UpdateVictory(float deltaTime) 
 {
-    if (IsKeyReleased(KEY_ENTER))
+    if (IsKeyReleased(KEY_N) && currentLevel < registeredWorlds.size())
     {
-        gameState = GameState::IN_MENU;
+        currentLevel++;
+        DeleteWorld(world);
+        world = GetWorld(currentLevel);
+        gameState = GameState::PLAYING;
+    }
+
+    if (IsKeyReleased(KEY_R))
+    {
+        DeleteWorld(world);
+        world = GetWorld(currentLevel);
+        gameState = GameState::PLAYING;
     }
 }
 
