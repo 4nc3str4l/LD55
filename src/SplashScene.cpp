@@ -36,6 +36,7 @@ void SplashScene::Update(float deltaTime)
 {
     timeElapsed += deltaTime;
     SetShaderValue(distortionShader, GetShaderLocation(distortionShader, "time"), &timeElapsed, SHADER_UNIFORM_FLOAT);
+    
 
     UpdateMusicStream(backgroundMusic);
     if(IsKeyPressed(KEY_SPACE))
@@ -53,6 +54,8 @@ void SplashScene::Update(float deltaTime)
         fadeOutOpacity += deltaTime * 1 / fadeTime;
         if (fadeOutOpacity > 1.0f) fadeOutOpacity = 1.0f;
     }
+
+
 }
 
 void SplashScene::Render()
@@ -71,6 +74,8 @@ void SplashScene::Render()
     if (changeSceneSheduled) {
         DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Fade(BLACK, fadeOutOpacity));
     }
+
+    EnableVolumeOptions(true);
 }
 
 void SplashScene::Unload() {

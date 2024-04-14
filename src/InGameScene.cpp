@@ -32,6 +32,8 @@ void InGameScene::DrawStartingUI()
 
     float richTextSize = MeasureText("Press [Enter] to summon the spring guardian", 20);
     DrawRichText("Press <color=0,255,155,255> [Enter] </color> to summon the spring guardian", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2, 20, WHITE);
+
+    EnableVolumeOptions(true);
 }
 
 void InGameScene::UpdateStarting(float delta)
@@ -59,7 +61,7 @@ void InGameScene::UpdatePlaying(float deltaTime)
 {
     SetShaderValue(entitiesShader, GetShaderLocation(entitiesShader, "time"), &timeElapsed, SHADER_UNIFORM_FLOAT);
     UpdateWorld(world, deltaTime);
-    SetMusicVolume(music, world->springDominance * 0.4f);
+    SetMusicVolume(music, fmax(world->springDominance * 0.4f, 0.1f));
 
     if (world->springDominance >= 1.0f)
     {
@@ -69,6 +71,8 @@ void InGameScene::UpdatePlaying(float deltaTime)
     {
         gameState = GameState::GAME_OVER;
     }
+
+    EnableVolumeOptions(false);
 }
 
 void InGameScene::DrawPlaying(World *world)
@@ -98,6 +102,9 @@ void InGameScene::DrawGameOverUI()
 
     richTextSize = MeasureText("Press [M] to return to the main menu", 20);
     DrawRichText("Press <color=150,0,0,255> [M] </color> to return to the main menu", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 120, 20, WHITE);
+
+
+    EnableVolumeOptions(true);
 }
 
 void InGameScene::UpdateGameOver(float deltaTime)
@@ -151,6 +158,8 @@ void InGameScene::DrawVictoryUI()
     // Show repeat level message
     richTextSize = MeasureText("Press [R] to repeat the level", 20);
     DrawRichText("Press <color=0,255,155,255> [R] </color> to repeat the level", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 150, 20, WHITE);
+
+    EnableVolumeOptions(true);
 }
 
 void InGameScene::UpdateVictory(float deltaTime)
