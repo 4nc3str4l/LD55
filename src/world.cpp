@@ -245,9 +245,6 @@ void RenderWorld(World *world, Shader* distortionShader, Shader* entitiesShader)
             // Calcula el ángulo de rotación basado en la posición
             float rotation = ((x + y) % 4) * 90;  // Esto rota las texturas en 0, 90, 180, o 270 grados
 
-            // Calcula el punto de origen para la rotación, aquí es el centro del tile
-            Vector2 origin = { TILE_SIZE / 2.0f, TILE_SIZE / 2.0f };
-
             // Dibuja la textura con rotación
             Rectangle sourceRec = { 0, 0, TILE_SIZE, TILE_SIZE };  // Región de la textura a dibujar
             Rectangle destRec = { x * TILE_SIZE + TILE_SIZE / 2.0f, y * TILE_SIZE + TILE_SIZE / 2.0f, TILE_SIZE, TILE_SIZE };  // Destino y tamaño en pantalla
@@ -297,9 +294,8 @@ void RenderWorld(World *world, Shader* distortionShader, Shader* entitiesShader)
     EndShaderMode();
 
 
-    Vector2 playerTilePos = GetTilePosition(world->player.position);
-
 #ifdef _DEBUG
+    Vector2 playerTilePos = GetTilePosition(world->player.position);
     DrawRectangle(playerTilePos.x * TILE_SIZE, playerTilePos.y * TILE_SIZE, TILE_SIZE, TILE_SIZE, BLACK);
 #endif
 
