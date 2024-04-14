@@ -154,6 +154,7 @@ struct World
     float springDominance = 0.0f;
 
     ParticleSystem particleSystem;
+    bool firstTileComputed = false;
 };
 
 World *LoadWorld(int level,
@@ -165,3 +166,4 @@ std::vector<TutorialText> LoadTutorialText(const std::string &path);
 void RenderWorld(World *world, Shader *distortionShader, Shader *entitiesShader);
 void UpdateWorld(World *world, float deltaTime);
 Vector2 GetTilePosition(const Vector2 &position);
+void NotifyStateChange(World *world, Rectangle where, TileType from, TileType to);

@@ -39,7 +39,7 @@ void SplashScene::Update(float deltaTime)
     
 
     UpdateMusicStream(backgroundMusic);
-    if(IsKeyPressed(KEY_SPACE))
+    if(IsKeyDown(KEY_SPACE))
     {
         if(!changeSceneSheduled)
         {
@@ -54,8 +54,6 @@ void SplashScene::Update(float deltaTime)
         fadeOutOpacity += deltaTime * 1 / fadeTime;
         if (fadeOutOpacity > 1.0f) fadeOutOpacity = 1.0f;
     }
-
-
 }
 
 void SplashScene::Render()

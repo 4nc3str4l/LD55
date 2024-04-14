@@ -491,32 +491,43 @@ void UpdateTileStates(World *world, float deltaTime)
         for (int x = 0; x < world->width; x++)
         {
             float tileState = world->tileStates[y][x];
+            TileType currentType = world->tileTypes[y][x];
+            TileType newType = currentType;
+
             if (tileState <= dry_range.y)
             {
                 world->tiles[y][x] = dry_color;
-                world->tileTypes[y][x] = TileType::Dry;
+                newType = TileType::Dry;
             }
             else if (tileState <= grass_range.y)
             {
                 world->tiles[y][x] = grass_color;
-                world->tileTypes[y][x] = TileType::Grass;
+                newType = TileType::Grass;
             }
             else if (tileState <= snow_range.y)
             {
                 world->tiles[y][x] = snow_color;
-                world->tileTypes[y][x] = TileType::Snow;
+                newType = TileType::Snow;
             }
 
-            // Blocks count as spring for simplicity
-            if (world->tileTypes[y][x] == TileType::Grass ||
-                world->tileTypes[y][x] == TileType::Block)
+            if (newType == TileType::Grass || newType == TileType::Block)
             {
                 numGrassTiles++;
+            }
+
+            if (newType != currentType)
+            {
+                world->tileTypes[y][x] = newType;
+                if(world->firstTileComputed)
+                {
+                    NotifyStateChange(world, Rectangle{static_cast<float>(x), static_cast<float>(y), 1.0f, 1.0f}, currentType, newType);
+                }
             }
         }
     }
     world->springDominance = static_cast<float>(numGrassTiles) / (world->width * world->height);
     world->springTiles = numGrassTiles;
+    world->firstTileComputed = true;
 }
 
 bool IsCollidingWithBlocks(World *world, Vector2 proposedPosition)
@@ -762,4 +773,9 @@ void DeleteWorld(World *world)
     UnloadTexture(world->springStaffTexture);
 
     delete world;
+}
+
+void NotifyStateChange(World *world, Rectangle where, TileType from, TileType to)
+{
+    std::cout << "State change at: " << where.x << ", " << where.y << " from: " << static_cast<int>(from) << " to: " << static_cast<int>(to) << std::endl;
 }
