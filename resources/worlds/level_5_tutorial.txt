@@ -1,0 +1,7 @@
+# Comments are accepted in this type of format
+# This is a ui text
+[u, 350, 120] Now its time for a real <color=255,0,0,255> challgenge </color>!
+
+
+[w, 200, 220] Its all about <color=233,178,86,255>EQUI </color><color=0,255,155,255>LIBR </color><color=255,255,255,255>IUM</color>
+
