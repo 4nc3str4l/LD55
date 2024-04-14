@@ -251,7 +251,7 @@ void InGameScene::Load()
     RegisterWorld(8);
     RegisterWorld(9);
     RegisterWorld(10);
-    
+    RegisterWorld(11);
 
     this->world = GetWorld(currentLevel);
 
