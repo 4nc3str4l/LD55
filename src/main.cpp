@@ -27,14 +27,14 @@ int main()
 
         SoundManager::Update(deltaTime);
         Scheduler::Update(deltaTime);
+     
+        sceneManager.UpdateCurrentScene(deltaTime);
 
         BeginDrawing();
         ClearBackground(DARKGRAY);
-
-        sceneManager.UpdateCurrentScene(deltaTime);
         sceneManager.RenderCurrentScene();
-
         EndDrawing();
+
     }
 
     // Clear scheduler for security

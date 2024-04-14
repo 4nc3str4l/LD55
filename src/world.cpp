@@ -273,6 +273,28 @@ void RenderWorld(World *world, Shader *distortionShader, Shader *entitiesShader)
             DrawTexture(world->groundTexture, x * TILE_SIZE, y * TILE_SIZE, world->tiles[y][x]);
         }
     }
+
+    for (const auto &block : world->blocks)
+    {
+        DrawRectangle(block.position.x, block.position.y, TILE_SIZE, TILE_SIZE, GRAY);
+    }
+
+    BeginShaderMode(*entitiesShader);
+
+    Vector4 tintVector = {
+        GREEN.r / 255.0f,
+        GREEN.g / 255.0f,
+        GREEN.b / 255.0f,
+        fmax(world->player.mortalEntity.health / world->player.mortalEntity.initialHealth, 0.05f),
+    };
+
+    SetShaderValue(*entitiesShader, GetShaderLocation(*entitiesShader, "tint"), &tintVector, SHADER_UNIFORM_VEC4);
+    DrawTexture(world->playerTexture,
+                world->player.position.x,
+                world->player.position.y - TILE_SIZE,
+                GREEN);
+    EndShaderMode();
+
     for (const auto &elemental : world->elementals)
     {
 
@@ -314,28 +336,7 @@ void RenderWorld(World *world, Shader *distortionShader, Shader *entitiesShader)
         }
     }
 
-    for (const auto &block : world->blocks)
-    {
-        DrawRectangle(block.position.x, block.position.y, TILE_SIZE, TILE_SIZE, GRAY);
-    }
-
     world->particleSystem.Draw();
-
-    BeginShaderMode(*entitiesShader);
-
-    Vector4 tintVector = {
-        GREEN.r / 255.0f,
-        GREEN.g / 255.0f,
-        GREEN.b / 255.0f,
-        fmax(world->player.mortalEntity.health / world->player.mortalEntity.initialHealth, 0.05f),
-    };
-
-    SetShaderValue(*entitiesShader, GetShaderLocation(*entitiesShader, "tint"), &tintVector, SHADER_UNIFORM_VEC4);
-    DrawTexture(world->playerTexture,
-                world->player.position.x,
-                world->player.position.y - TILE_SIZE,
-                GREEN);
-    EndShaderMode();
 
     // Draw a health bar for the player
     if (world->player.mortalEntity.health != world->player.mortalEntity.initialHealth)
@@ -570,6 +571,9 @@ void HandleInteractionWithElementals(World *world)
                 elemental.movementRadius = 1;
                 elemental.timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES;
                 elemental.ChoosenPosition = elemental.position;
+
+                elemental.position.x = world->player.position.x + 20;
+                elemental.position.y = world->player.position.y + 20;
                 break;
             }
         }
@@ -807,7 +811,7 @@ void NotifyStateChange(World *world, Rectangle where, TileType from, TileType to
         SoundManager::PlaySound(SFX_DRY, 0.3f, 0.1f);
         break;
     case TileType::Grass:
-        SoundManager::PlaySound(SFX_GRASS, 0.3f, 0.1f);
+        SoundManager::PlaySound(SFX_GRASS, 0.1f, 0.5f);
         break;
     case TileType::Snow:
         SoundManager::PlaySound(SFX_FREEZE, 0.3f, 0.1f);
