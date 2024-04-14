@@ -20,7 +20,21 @@ void DrawFormattedText(int springTiles, int totalTiles, float percentage, int po
     DrawText(ss.str().c_str(), posX, posY, 4, WHITE);
 }
 
-void DrawUI(const World *world)
+void InGameScene::DrawStartingUI() 
+{
+    float richTextSize = MeasureText("Press [Enter] to start", 20);
+    DrawRichText("Press <color=0,255,0,255> [Enter] </color> to start", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2, 20, WHITE);
+}
+
+void InGameScene::UpdateStarting(float delta)
+{
+    if (IsKeyReleased(KEY_ENTER))
+    {
+        gameState = GameState::PLAYING;
+    }
+}
+
+void InGameScene::DrawInGameUI(const World *world)
 {
     DrawRectangle(0, 0, SCREEN_WIDTH, 40, BLACK);
     DrawText("Spring Dominance:", 10, 10, 20, WHITE);
@@ -33,6 +47,74 @@ void DrawUI(const World *world)
     DrawText(FormatText("Level: %i", world->currentLevel).c_str(), SCREEN_WIDTH - 100, 15, 20, WHITE);
 }
 
+void InGameScene::UpdatePlaying(float deltaTime)
+{
+    if(timeElapsed > 10000.0f) {
+        timeElapsed = 0.0f;
+    }
+    SetShaderValue(distortionShader, GetShaderLocation(distortionShader, "time"), &timeElapsed, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(entitiesShader, GetShaderLocation(entitiesShader, "time"), &timeElapsed, SHADER_UNIFORM_FLOAT);
+    UpdateWorld(world, deltaTime);
+    SetMusicVolume(music, world->springDominance * 0.4f);
+
+    if(world->springDominance >= 1.0f) {
+        gameState = GameState::VICTORY;
+    }
+}
+
+void InGameScene::DrawPlaying(World *world)
+{
+    RenderWorld(world, &distortionShader, &entitiesShader);
+    DrawInGameUI(world);
+}
+
+void InGameScene::DrawGameOverUI() 
+{
+    float victoryTextSize = MeasureText("GameOver!", 40);
+    DrawText("Game Over!", SCREEN_WIDTH / 2 - victoryTextSize / 2, SCREEN_HEIGHT / 2 - 40, 40, WHITE);
+
+
+    float richTextSize = MeasureText("Press [Enter] to continue", 20);
+    DrawRichText("Press <color=0,255,0,255> [Enter] </color> to continue", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2, 20, WHITE);
+}
+
+void InGameScene::UpdateGameOver(float deltaTime) 
+{
+    if (IsKeyReleased(KEY_ENTER))
+    {
+        gameState = GameState::IN_MENU;
+    }
+}
+
+
+void InGameScene::DrawVictoryUI() 
+{
+    float victoryTextSize = MeasureText("Victory!", 40);
+    DrawText("Victory!", SCREEN_WIDTH / 2 - victoryTextSize / 2, SCREEN_HEIGHT / 2 - 40, 40, WHITE);
+
+
+    float richTextSize = MeasureText("Press [Enter] to continue", 20);
+    DrawRichText("Press <color=0,255,0,255> [Enter] </color> to continue", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2, 20, WHITE);
+}
+
+void InGameScene::UpdateVictory(float deltaTime) 
+{
+    if (IsKeyReleased(KEY_ENTER))
+    {
+        gameState = GameState::IN_MENU;
+    }
+}
+
+
+void InGameScene::UpdateInMenuUI(float deltaTime) 
+{
+
+}
+
+void InGameScene::DrawInMenuUI(World* world) 
+{
+    DrawInGameUI(world);
+}
 
 void InGameScene::Load() {
     World* w = LoadWorld("resources/worlds/level_1_ground.csv",
@@ -47,22 +129,58 @@ void InGameScene::Load() {
     entitiesShader = LoadEntitiesShader();
     SetShaderValue(entitiesShader, GetShaderLocation(entitiesShader, "resolution"), resolution, SHADER_UNIFORM_VEC2);
 
+    music = LoadMusicStream("resources/in_game_music.mp3");
+    PlayMusicStream(music);
 }
 
 void InGameScene::Update(float deltaTime) {
+    UpdateMusicStream(music);
     timeElapsed += deltaTime;
-    SetShaderValue(distortionShader, GetShaderLocation(distortionShader, "time"), &timeElapsed, SHADER_UNIFORM_FLOAT);
-    SetShaderValue(entitiesShader, GetShaderLocation(entitiesShader, "time"), &timeElapsed, SHADER_UNIFORM_FLOAT);
-    UpdateWorld(world, deltaTime);
+    switch (gameState)
+    {
+    case GameState::STARTING:
+        UpdateStarting(deltaTime);
+        break;
+    case GameState::PLAYING:
+        UpdatePlaying(deltaTime);
+        break;
+    case GameState::GAME_OVER:
+        UpdateGameOver(deltaTime);
+        break;
+    case GameState::IN_MENU:
+        UpdateInMenuUI(deltaTime);
+        break;
+    case GameState::VICTORY:
+        UpdateVictory(deltaTime);
+        break;
+    }
 }
 
-void InGameScene::Render() {
-    RenderWorld(world, &distortionShader, &entitiesShader);
-    DrawUI(world);
+void InGameScene::Render() 
+{
+    switch (gameState)
+    {
+    case GameState::STARTING:
+        DrawStartingUI();
+        break;
+    case GameState::PLAYING:
+        DrawPlaying(world);
+        break;
+    case GameState::GAME_OVER:
+        DrawGameOverUI();
+        break;
+    case GameState::IN_MENU:
+        DrawInMenuUI(world);
+        break;
+    case GameState::VICTORY:
+        DrawVictoryUI();
+        break;
+    }
 }
 
 void InGameScene::Unload() {
     DeleteWorld(world);
     UnloadShader(distortionShader);
     UnloadShader(entitiesShader);
+    UnloadMusicStream(music);
 }
