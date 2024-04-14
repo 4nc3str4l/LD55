@@ -1,65 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ludum Dare 55 - Spring Must Come</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
-        body, html {
+        body,
+        html {
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            background: linear-gradient(to bottom, #000000, #004400); /* Gradient from black to green */
+            overflow-x: hidden;
+            /* Prevent horizontal scrolling */
+            overflow-y: auto;
+            /* Allow vertical scrolling if needed */
+            background: linear-gradient(to bottom, #00ff99, #00ff99 20px, #000000 100px);
+            /* Smooth gradient from specific green to black */
             color: white;
             font-family: 'Press Start 2P', cursive;
         }
+
         #game-container {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
+            /* Use 'min-height' to allow container to expand beyond the viewport height */
+            width: 80%;
+            /* Limit width to avoid stretching across the whole screen */
+            margin: auto;
+            margin-top: 50px;
+            /* Ensure there is a margin at the top */
+            overflow: auto;
+            /* Allow scrolling when necessary */
         }
+
         canvas {
             background-color: black;
         }
-        #fullscreen-btn {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #666;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
+
         #instructions {
             text-align: center;
             margin-top: 20px;
+            padding: 10px;
+            max-width: 900px;
+        }
+
+        ul {
+            text-align: left;
+            padding-left: 20px;
+            /* Ensure bullet points stay within the visible area */
+            list-style-type: disc;
+            /* Optional: Ensures disc type bullets */
+        }
+
+        li {
+            margin-bottom: 5px;
+            /* Give some space between list items */
+        }
+
+        .highlight {
+            color: #00ff99;
+            /* Same green as the top of the background gradient */
         }
     </style>
 </head>
+
 <body>
-<div id="game-container">
-    <canvas id="canvas"></canvas>
-    <div id="instructions">
-        <p>WASD to move, SPACE to grab/release stuff (elementals, totem)</p>
-        <p>Game made by Cristian Muriel in 48 hours for Ludum Dare 55</p>
-        <p>Created with love in C++ using Raylib & Emscripten</p>
-        <p><a href="https://github.com/4nc3str4l/LD55" target="_blank">GitHub Repository</a></p>
+    <div id="game-container">
+        <canvas id="canvas"></canvas>
+        <div id="instructions">
+            <p>You are the spring guardian and your mission is to perform a ritual to summon spring that consists in
+                making sure that all the map is green as <span class="highlight">Switzerland</span>.</p>
+            <h3>How To Play:</h3>
+            <ul>
+                <li>WASD or Arrow Keys to move.</li>
+                <li>Space to grab and release stuff.</li>
+                <li>Mouse to control position of elementals when grabbing a control staff.</li>
+                <li>V to mute audio.</li>
+                <li>N and B to increase or decrease volume.</li>
+            </ul>
+            <h3>Tech Used:</h3>
+            <ul>
+                <li>C++</li>
+                <li>Raylib</li>
+                <li>Emscripten Compiler (for web build)</li>
+                <li>Pinta (linux)</li>
+                <li>Audacity (Audio modifications)</li>
+                <li>sfxr.me (Sounds)</li>
+            </ul>
+            <p><a href="https://github.com/4nc3str4l/LD55" target="_blank">GitHub Repository</a></p>
+        </div>
     </div>
-</div>
-<script>
-    var Module = {
-        canvas: document.getElementById('canvas')
-    };
+    <script>
+        var Module = {
+            canvas: document.getElementById('canvas')
+        };
+
+        document.addEventListener('keydown', function (event) {
+            if (event.keyCode === 32) {  // Space
+                event.preventDefault();  
+            }
+        });
 
 
-    // Load the game script
-    var script = document.createElement('script');
-    script.src = 'game.js';
-    document.body.appendChild(script);
-</script>
+        // Load the game script
+        var script = document.createElement('script');
+        script.src = 'game.js';
+        document.body.appendChild(script);
+    </script>
 </body>
+
 </html>

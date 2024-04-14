@@ -4,6 +4,6 @@
 [u, 250, 160] Place the <color=0,255,155,255>spring staff</color> in the <color=233,178,86,255>dry</color> and <color=240,240,240,255>ice</color> zones
 
 # This is a world text
-[u, 250, 400] <color=255,0,0,255>BE CAREFULL</color> being in <color=233,178,86,255>dry</color> or <color=240,240,240,255>ice</color> zones will <color=255,0,0,255>Hurt</color> you!
+[u, 250, 400] <color=255,0,0,255>BE CAREFUL</color> being in <color=233,178,86,255>dry</color> or <color=240,240,240,255>ice</color> zones will <color=255,0,0,255>Hurt</color> you!
 [u, 280, 450]  (Go go <color=0,255,155,255>GRASS ZONES </color> to <color=0,255,155,255>RECOVER</color>)
 
