@@ -39,9 +39,11 @@ void InGameScene::DrawStartingUI()
 
 void InGameScene::UpdateStarting(float delta)
 {
-    if (IsKeyReleased(KEY_ENTER))
+    if (IsKeyDown(KEY_ENTER))
     {
         gameState = GameState::PLAYING;
+        SoundManager::PlaySound(SFX_GRASS, 0.5f, 0.1f);
+        SoundManager::PlayMusic(SoundManager::gameMusic, 0.2f);
     }
 }
 
@@ -65,16 +67,19 @@ void InGameScene::UpdatePlaying(float deltaTime)
 {
     SetShaderValue(entitiesShader, GetShaderLocation(entitiesShader, "time"), &timeElapsed, SHADER_UNIFORM_FLOAT);
     UpdateWorld(world, deltaTime);
-    SetMusicVolume(music, fmax(world->springDominance * 0.4f, 0.1f));
 
     if (world->springDominance >= 1.0f)
     {
         gameState = GameState::VICTORY;
         SoundManager::PlaySound(SFX_VICTORY, 0.5f, 0.1f);
+        SoundManager::PlayMusic(SoundManager::titleMusic, 0.7f);
     }
     else if (world->player.mortalEntity.isDead)
     {
         gameState = GameState::GAME_OVER;
+        SoundManager::PlaySound(SFX_HIT, 0.5f, 0.1f);
+        SoundManager::StopMusic();
+        SoundManager::PlayMusic(SoundManager::titleMusic, 0.1f);
     }
 
     if(IsKeyDown(KEY_R))
@@ -121,14 +126,14 @@ void InGameScene::DrawGameOverUI()
 
 void InGameScene::UpdateGameOver(float deltaTime)
 {
-    if (IsKeyReleased(KEY_R))
+    if (IsKeyDown(KEY_R))
     {
         DeleteWorld(world);
         world = GetWorld(currentLevel);
         gameState = GameState::PLAYING;
     }
 
-    if (IsKeyReleased(KEY_M))
+    if (IsKeyDown(KEY_M))
     {
         SceneManager::GetInstance().ChangeScene("Splash");
     }
@@ -225,7 +230,7 @@ World *InGameScene::GetWorld(int level)
 void InGameScene::Load()
 {
     gameState = GameState::STARTING;
-    currentLevel = 6;
+    currentLevel = 1;
 
     RegisterWorld(1);
     RegisterWorld(2);
@@ -243,15 +248,13 @@ void InGameScene::Load()
     entitiesShader = LoadEntitiesShader();
     SetShaderValue(entitiesShader, GetShaderLocation(entitiesShader, "resolution"), resolution, SHADER_UNIFORM_VEC2);
 
-    music = LoadMusicStream("resources/in_game_music.mp3");
-    PlayMusicStream(music);
+    SoundManager::PlayMusic(SoundManager::gameMusic, 0.5f);
 
     background = LoadTexture("resources/splash.png");
 }
 
 void InGameScene::Update(float deltaTime)
 {
-    UpdateMusicStream(music);
     timeElapsed += deltaTime;
     if (timeElapsed > 10000.0f)
     {
@@ -312,5 +315,4 @@ void InGameScene::Unload()
     DeleteWorld(world);
     UnloadShader(distortionShader);
     UnloadShader(entitiesShader);
-    UnloadMusicStream(music);
 }

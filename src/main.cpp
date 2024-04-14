@@ -10,6 +10,7 @@ int main()
 {
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE);
     InitAudioDevice();
+    SoundManager::Init();
 
     // Create the scenes and add them to the scene manager
     SceneManager& sceneManager = SceneManager::GetInstance();
@@ -17,7 +18,6 @@ int main()
     sceneManager.AddScene("InGame", std::make_shared<InGameScene>());
     sceneManager.ChangeScene("Splash");
 
-    SoundManager::Init();
 
     SetTargetFPS(60);
 

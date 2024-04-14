@@ -44,7 +44,6 @@ private:
     Shader distortionShader;
     Shader entitiesShader;
     float timeElapsed = 0.0f;
-    Music music;
     GameState gameState = GameState::GAME_OVER;
     Texture2D background;
 

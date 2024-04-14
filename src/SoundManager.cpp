@@ -12,6 +12,9 @@ void SoundManager::Init()
     sounds[SFX_RELEASE] = LoadSound("resources/release.wav");
     sounds[SFX_HEAL] = LoadSound("resources/heal.wav");
     sounds[SFX_VICTORY] = LoadSound("resources/victory.wav");
+
+    gameMusic = LoadMusicStream("resources/in_game_music.mp3");
+    titleMusic = LoadMusicStream("resources/bg_music.mp3");
 }
 
 void SoundManager::Update(float deltaTime)
@@ -24,17 +27,27 @@ void SoundManager::Update(float deltaTime)
             soundTimer.second -= deltaTime;
         }
     }
+
+    if(currentMusicStream != nullptr)
+    {
+        UpdateMusicStream(*currentMusicStream);
+    }
 }
 
 void SoundManager::Cleanup()
 {
+    StopMusic();
 
     for (auto &sound : sounds)
     {
         UnloadSound(sound.second);
     }
     sounds.clear();
+
+    UnloadMusicStream(gameMusic);
+    UnloadMusicStream(titleMusic);
 }
+
 
 void SoundManager::PlaySound(const std::string &soundFile, float volume, float pitchVariance)
 {
@@ -52,4 +65,24 @@ void SoundManager::PlaySound(const std::string &soundFile, float volume, float p
     SetSoundPitch(sounds[soundFile], pitch);
     SetSoundVolume(sounds[soundFile], volume);
     ::PlaySound(sounds[soundFile]);
+}
+
+void SoundManager::PlayMusic(Music &music, float volume)
+{
+    if (currentMusicStream != nullptr) {
+        StopMusicStream(*currentMusicStream); // Stop current music if it is playing
+    }
+    
+    currentMusicStream = &music; // Set the new music stream
+    PlayMusicStream(music); // Play the new music
+    // Set the volume of the music
+    SetMusicVolume(music, volume);
+}
+
+void SoundManager::StopMusic()
+{
+    if (currentMusicStream != nullptr) {
+        StopMusicStream(*currentMusicStream); // Stop the music
+        currentMusicStream = nullptr;
+    }
 }

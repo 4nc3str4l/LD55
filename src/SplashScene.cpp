@@ -4,6 +4,8 @@
 #include "constants.h"
 #include "SceneManager.h"
 #include "Scheduler.h"
+#include "SoundManager.h"
+
 
 SplashScene::SplashScene() : GameScene("Splash Scene") {}
 
@@ -14,13 +16,6 @@ void SplashScene::Load() {
     titleSize = MeasureText("Spring MUST Come", 40);
     pressEnterToStartSize = MeasureText("Press [SPACE] to start", 20);
 
-    backgroundMusic = LoadMusicStream("resources/bg_music.mp3");;
-
-    if(backgroundMusic.stream.buffer == nullptr)
-    {
-        std::cout << "Error loading music" << std::endl;
-    }
-    PlayMusicStream(backgroundMusic);
 
     distortionShader = LoadDistorionShader();
     float resolution[2] = {(float)GetScreenWidth(), (float)GetScreenHeight()};
@@ -30,6 +25,7 @@ void SplashScene::Load() {
     fadeOutOpacity = 0.0f;
     changeSceneSheduled = false;
     fadeTime = 0.5f;
+    SoundManager::PlayMusic(SoundManager::titleMusic, 0.6f);
 }
 
 void SplashScene::Update(float deltaTime)
@@ -37,8 +33,6 @@ void SplashScene::Update(float deltaTime)
     timeElapsed += deltaTime;
     SetShaderValue(distortionShader, GetShaderLocation(distortionShader, "time"), &timeElapsed, SHADER_UNIFORM_FLOAT);
     
-
-    UpdateMusicStream(backgroundMusic);
     if(IsKeyDown(KEY_SPACE))
     {
         if(!changeSceneSheduled)
@@ -79,6 +73,5 @@ void SplashScene::Render()
 void SplashScene::Unload() {
     std::cout << "Unloading Splash Scene resources..." << std::endl;
     UnloadTexture(background);
-    UnloadMusicStream(backgroundMusic);
     UnloadShader(distortionShader);
 }

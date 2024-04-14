@@ -19,7 +19,6 @@ private:
     int pressEnterToStartSize;
     bool changeSceneSheduled = false;
     float fadeOutOpacity = 0.0f;
-    Music backgroundMusic;
     Shader distortionShader;
     float timeElapsed = 0.0f;
     float fadeTime = 0.5f;
