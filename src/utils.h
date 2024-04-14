@@ -110,7 +110,7 @@ inline void EnableVolumeOptions(bool render)
     if(render)
     {
         DrawRichText("Press <color=0,255,155,255> [V] </color> to mute/unmute the audio", SCREEN_WIDTH - 200, SCREEN_HEIGHT - 30, 10, WHITE);
-        DrawRichText("Use <color=0,255,155,255> [N] </color> or <color=0,255,155,255> [B] </color> to increase or decrease the volume", SCREEN_WIDTH - 280, SCREEN_HEIGHT - 60, 10, WHITE);
+        DrawRichText("Use <color=0,255,155,255> [U] </color> or <color=0,255,155,255> [D] </color> to increase or decrease the volume", SCREEN_WIDTH - 280, SCREEN_HEIGHT - 60, 10, WHITE);
     }
 
     if (IsKeyReleased(KEY_V))
@@ -118,12 +118,12 @@ inline void EnableVolumeOptions(bool render)
         SetMasterVolume(GetMasterVolume() > 0.0f ? 0.0f : 1.0f);
     }
 
-    if (IsKeyReleased(KEY_N))
+    if (IsKeyReleased(KEY_U))
     {
         SetMasterVolume(GetMasterVolume() + 0.1f);
     }
 
-    if (IsKeyReleased(KEY_B))
+    if (IsKeyReleased(KEY_D))
     {
         SetMasterVolume(GetMasterVolume() - 0.1f);
     }
