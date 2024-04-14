@@ -158,24 +158,39 @@ void InGameScene::DrawVictoryUI()
     DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Fade(BLACK, 0.9f));
     DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Fade(GREEN, 0.1f));
 
-    float victoryTextSize = MeasureText("Victory!", 40);
-    DrawRichText("<color=0,255,155,255>Victory!</color>", SCREEN_WIDTH / 2 - victoryTextSize / 2, 150, 40, WHITE);
+    bool gameComplete = currentLevel >= registeredWorlds.size();
+    
+    if(!gameComplete)
+    {
+        float victoryTextSize = MeasureText("Victory!", 40);
+        DrawRichText("<color=0,255,155,255>Victory!</color>", SCREEN_WIDTH / 2 - victoryTextSize / 2, 150, 40, WHITE);
+        float explaationSize = MeasureText("Spring HAS come!", 25);
+        DrawRichText("Spring <color=0,255,155,255>HAS</color> come!", SCREEN_WIDTH / 2 - explaationSize / 2, 220, 25, WHITE);
+    }
+    else
+    {
+        float explaationSize = MeasureText("Spring HAS come... FOREVER!", 25);
+        DrawRichText("Spring <color=0,255,155,255>HAS</color> come... <color=0,255,155,255>FOREVER</color>", SCREEN_WIDTH / 2 - explaationSize / 2, 150, 25, WHITE);
+    }
 
-    float explaationSize = MeasureText("Spring HAS come!", 25);
-    DrawRichText("Spring <color=0,255,155,255>HAS</color> come!", SCREEN_WIDTH / 2 - explaationSize / 2, 220, 25, WHITE);
 
     float richTextSize = 0;
 
     // Show next world message
-    if (currentLevel < registeredWorlds.size())
+    if (!gameComplete)
     {
         richTextSize = MeasureText("Press [N] to continue to the next level", 20);
         DrawRichText("Press <color=0,255,155,255> [N] </color> to continue to the next level", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 60, 20, WHITE);
     }
     else
     {
-        richTextSize = MeasureText("Congratulations you finsihed the game!!", 20);
-        DrawRichText("Congratulations you <color=0,255,155,255>finsihed</color> the game!!", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 60, 20, WHITE);
+        richTextSize = MeasureText("Congratulations you FINISHED the game!!", 20);
+        DrawRichText("Congratulations you <color=0,255,155,255>FINISHED</color> the game!!", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 - 60, 20, WHITE);
+
+        richTextSize = MeasureText("Thanks a lot for playing, it means the WORLD to ME...", 20);
+        DrawRichText("Thanks a lot for playing, it means the <color=0, 255, 155, 255> WORLD</color> to<color=0,255,155,255> ME</color>...", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2, 20, WHITE);
+
+        
 
         richTextSize = MeasureText("Press [M] to return to the main menu", 20);
         DrawRichText("Press <color=150,0,0,255> [M] </color> to return to the main menu", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 120, 20, WHITE);
@@ -239,7 +254,7 @@ World *InGameScene::GetWorld(int level)
 void InGameScene::Load()
 {
     gameState = GameState::STARTING;
-    currentLevel = 11;
+    currentLevel = 1;
 
     RegisterWorld(1);
     RegisterWorld(2);
