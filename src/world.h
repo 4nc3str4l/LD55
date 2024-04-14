@@ -69,8 +69,17 @@ enum class PlayerStatus
     Idle = 0,
     Moving = 1,
     Grabbing = 2,
-    Dead = 3,
     Count
+};
+
+struct MortalEntity 
+{    
+    float initialHealth = 100.0f;
+    float health = 100.0f;
+    float damageRate = 5.0f;
+    float nextHealthCheck = 0.0f;
+    float checkRate = 2.0f;
+    bool isDead = false;
 };
 
 struct Player
@@ -78,7 +87,9 @@ struct Player
     Vector2 position = {100, 100};
     float speed = 300.0f;
     PlayerStatus status = PlayerStatus::Moving;
+    MortalEntity mortalEntity = {100.0f, 100.0f, 5.0f, 0.0f, 2.0f, false};
 };
+
 
 struct Elemental
 {

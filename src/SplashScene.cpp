@@ -26,6 +26,10 @@ void SplashScene::Load() {
     float resolution[2] = {(float)GetScreenWidth(), (float)GetScreenHeight()};
     SetShaderValue(distortionShader, GetShaderLocation(distortionShader, "resolution"), resolution, SHADER_UNIFORM_VEC2);
 
+    timeElapsed = 0.0f;
+    fadeOutOpacity = 0.0f;
+    changeSceneSheduled = false;
+    fadeTime = 0.5f;
 }
 
 void SplashScene::Update(float deltaTime)

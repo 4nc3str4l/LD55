@@ -45,7 +45,7 @@ private:
     Shader entitiesShader;
     float timeElapsed = 0.0f;
     Music music;
-    GameState gameState = GameState::STARTING;
+    GameState gameState = GameState::GAME_OVER;
     Texture2D background;
 
     std::vector<RegisteredWorld> registeredWorlds;

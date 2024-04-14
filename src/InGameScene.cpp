@@ -6,11 +6,12 @@
 #include "raylib.h"
 #include "world.h"
 #include "utils.h"
+#include "SceneManager.h"
 
-InGameScene::InGameScene() : GameScene("In-Game Scene") {}
+InGameScene::InGameScene() : GameScene("InGameScene") {}
 
-
-void DrawFormattedText(int springTiles, int totalTiles, float percentage, int posX, int posY) {
+void DrawFormattedText(int springTiles, int totalTiles, float percentage, int posX, int posY)
+{
     std::ostringstream ss;
 
     // Build the formatted string with fixed-point notation and two decimal places
@@ -21,12 +22,11 @@ void DrawFormattedText(int springTiles, int totalTiles, float percentage, int po
     DrawText(ss.str().c_str(), posX, posY, 4, WHITE);
 }
 
-void InGameScene::DrawStartingUI() 
+void InGameScene::DrawStartingUI()
 {
-
     DrawTexture(background, 0, 0, WHITE);
     BeginShaderMode(distortionShader);
-        DrawTexture(background, 0, 0, WHITE);
+    DrawTexture(background, 0, 0, WHITE);
     EndShaderMode();
     DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Fade(BLACK, 0.9f));
 
@@ -49,8 +49,8 @@ void InGameScene::DrawInGameUI(const World *world)
     DrawRectangle(200, 15, 200, 10, RED);
     DrawRectangle(200, 15, 200 * world->springDominance, 10, LIME);
     // Draw total number of tiles / number of missing tiles
-    DrawFormattedText(world->springTiles, world->width* world->height,
-                            world->springDominance, 225, 15);
+    DrawFormattedText(world->springTiles, world->width * world->height,
+                      world->springDominance, 225, 15);
     // Print the level where we are
     DrawText(FormatText("Level: %i", world->currentLevel).c_str(), SCREEN_WIDTH - 100, 15, 20, WHITE);
 }
@@ -61,8 +61,13 @@ void InGameScene::UpdatePlaying(float deltaTime)
     UpdateWorld(world, deltaTime);
     SetMusicVolume(music, world->springDominance * 0.4f);
 
-    if(world->springDominance >= 1.0f) {
+    if (world->springDominance >= 1.0f)
+    {
         gameState = GameState::VICTORY;
+    }
+    else if (world->player.mortalEntity.isDead)
+    {
+        gameState = GameState::GAME_OVER;
     }
 }
 
@@ -72,44 +77,83 @@ void InGameScene::DrawPlaying(World *world)
     DrawInGameUI(world);
 }
 
-void InGameScene::DrawGameOverUI() 
+void InGameScene::DrawGameOverUI()
 {
-    float victoryTextSize = MeasureText("GameOver!", 40);
-    DrawText("Game Over!", SCREEN_WIDTH / 2 - victoryTextSize / 2, SCREEN_HEIGHT / 2 - 40, 40, WHITE);
 
+    DrawTexture(background, 0, 0, WHITE);
+    BeginShaderMode(distortionShader);
+    DrawTexture(background, 0, 0, WHITE);
+    EndShaderMode();
 
-    float richTextSize = MeasureText("Press [Enter] to continue", 20);
-    DrawRichText("Press <color=0,255,0,255> [Enter] </color> to continue", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2, 20, WHITE);
+    DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Fade(BLACK, 0.9f));
+    DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Fade(RED, 0.2f));
+
+    float victoryTextSize = MeasureText("Game Over!", 40);
+    DrawRichText("<color=255,0,0,255>Game Over!</color>", SCREEN_WIDTH / 2 - victoryTextSize / 2, 150, 40, WHITE);
+
+    float richTextSize = MeasureText("Spring won't come this year...", 20);
+
+    richTextSize = MeasureText("Press [R] if it is NOT OVER yet!", 20);
+    DrawRichText("Press <color=0,255,0,255> [R] </color> if it is <color=0,255,0,255>NOT OVER</color> yet!", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 60, 20, WHITE);
+
+    richTextSize = MeasureText("Press [M] to return to the main menu", 20);
+    DrawRichText("Press <color=150,0,0,255> [M] </color> to return to the main menu", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 120, 20, WHITE);
 }
 
-void InGameScene::UpdateGameOver(float deltaTime) 
+void InGameScene::UpdateGameOver(float deltaTime)
 {
-    if (IsKeyReleased(KEY_ENTER))
+    if (IsKeyReleased(KEY_R))
     {
-        gameState = GameState::IN_MENU;
+        DeleteWorld(world);
+        world = GetWorld(currentLevel);
+        gameState = GameState::PLAYING;
+    }
+
+    if (IsKeyReleased(KEY_M))
+    {
+        SceneManager::GetInstance().ChangeScene("Splash");
     }
 }
 
-void InGameScene::DrawVictoryUI() 
+void InGameScene::DrawVictoryUI()
 {
+    DrawTexture(background, 0, 0, WHITE);
+    BeginShaderMode(distortionShader);
+    DrawTexture(background, 0, 0, WHITE);
+    EndShaderMode();
+
+    DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Fade(BLACK, 0.9f));
+    DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Fade(GREEN, 0.2f));
+
     float victoryTextSize = MeasureText("Victory!", 40);
-    DrawText("Victory!", SCREEN_WIDTH / 2 - victoryTextSize / 2, SCREEN_HEIGHT / 2 - 40, 40, WHITE);
+    DrawRichText("<color=0,255,0,255>Victory!</color>", SCREEN_WIDTH / 2 - victoryTextSize / 2, 150, 40, WHITE);
+
+    float explaationSize = MeasureText("Spring HAS come!", 25);
+    DrawRichText("Spring <color=0,255,0,255>HAS</color> come!", SCREEN_WIDTH / 2 - explaationSize / 2, 220, 25, WHITE);
 
     float richTextSize = 0;
 
     // Show next world message
-    if(currentLevel < registeredWorlds.size()) {
+    if (currentLevel < registeredWorlds.size())
+    {
         richTextSize = MeasureText("Press [N] to continue to the next level", 20);
         DrawRichText("Press <color=0,255,0,255> [N] </color> to continue to the next level", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 60, 20, WHITE);
+    }
+    else
+    {
+        richTextSize = MeasureText("Congratulations you finsihed the game!!", 20);
+        DrawRichText("Congratulations you <color=0,255,0,255>finsihed</color> the game!!", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 60, 20, WHITE);
+
+        richTextSize = MeasureText("Press [M] to return to the main menu", 20);
+        DrawRichText("Press <color=150,0,0,255> [M] </color> to return to the main menu", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 120, 20, WHITE);
     }
 
     // Show repeat level message
     richTextSize = MeasureText("Press [R] to repeat the level", 20);
-    DrawRichText("Press <color=0,255,0,255> [R] </color> to repeat the level", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 120, 20, WHITE);
-    
+    DrawRichText("Press <color=0,255,0,255> [R] </color> to repeat the level", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 150, 20, WHITE);
 }
 
-void InGameScene::UpdateVictory(float deltaTime) 
+void InGameScene::UpdateVictory(float deltaTime)
 {
     if (IsKeyReleased(KEY_N) && currentLevel < registeredWorlds.size())
     {
@@ -125,22 +169,28 @@ void InGameScene::UpdateVictory(float deltaTime)
         world = GetWorld(currentLevel);
         gameState = GameState::PLAYING;
     }
+
+    if (IsKeyReleased(KEY_M) && currentLevel >= registeredWorlds.size())
+    {
+        SceneManager::GetInstance().ChangeScene("Splash");
+    }
 }
 
-
-void InGameScene::UpdateInMenuUI(float deltaTime) 
+void InGameScene::UpdateInMenuUI(float deltaTime)
 {
-
 }
 
-void InGameScene::DrawInMenuUI(World* world) 
+void InGameScene::DrawInMenuUI(World *world)
 {
     DrawInGameUI(world);
 }
 
-World* InGameScene::GetWorld(int level) {
-    for (auto &w : registeredWorlds) {
-        if (w.level == level) {
+World *InGameScene::GetWorld(int level)
+{
+    for (auto &w : registeredWorlds)
+    {
+        if (w.level == level)
+        {
             std::string levelStr = std::to_string(level);
             std::string worldPath = "resources/worlds/level_" + levelStr + "_ground.csv";
             std::string entitiesPath = "resources/worlds/level_" + levelStr + "_entities.csv";
@@ -151,8 +201,11 @@ World* InGameScene::GetWorld(int level) {
     return nullptr;
 }
 
-void InGameScene::Load() 
+void InGameScene::Load()
 {
+    gameState = GameState::VICTORY;
+    currentLevel = 2;
+
     RegisterWorld(1);
     RegisterWorld(2);
 
@@ -169,17 +222,21 @@ void InGameScene::Load()
     PlayMusicStream(music);
 
     background = LoadTexture("resources/splash.png");
+
+
+
 }
 
-void InGameScene::Update(float deltaTime) {
+void InGameScene::Update(float deltaTime)
+{
     UpdateMusicStream(music);
     timeElapsed += deltaTime;
-    if(timeElapsed > 10000.0f) 
+    if (timeElapsed > 10000.0f)
     {
         timeElapsed = 0.0f;
     }
     SetShaderValue(distortionShader, GetShaderLocation(distortionShader, "time"), &timeElapsed, SHADER_UNIFORM_FLOAT);
-    
+
     switch (gameState)
     {
     case GameState::STARTING:
@@ -200,7 +257,7 @@ void InGameScene::Update(float deltaTime) {
     }
 }
 
-void InGameScene::Render() 
+void InGameScene::Render()
 {
     switch (gameState)
     {
@@ -222,11 +279,14 @@ void InGameScene::Render()
     }
 }
 
-void InGameScene::RegisterWorld(int level) {
+void InGameScene::RegisterWorld(int level)
+{
     registeredWorlds.push_back({level});
 }
 
-void InGameScene::Unload() {
+void InGameScene::Unload()
+{
+    registeredWorlds.clear();
     DeleteWorld(world);
     UnloadShader(distortionShader);
     UnloadShader(entitiesShader);

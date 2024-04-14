@@ -324,7 +324,7 @@ void RenderWorld(World *world, Shader *distortionShader, Shader *entitiesShader)
         GREEN.r / 255.0f,
         GREEN.g / 255.0f,
         GREEN.b / 255.0f,
-        fmax(world->springDominance, 0.2f),
+        fmax(world->player.mortalEntity.health/world->player.mortalEntity.initialHealth, 0.05f),
     };
 
     SetShaderValue(*entitiesShader, GetShaderLocation(*entitiesShader, "tint"), &tintVector, SHADER_UNIFORM_VEC4);
@@ -333,6 +333,14 @@ void RenderWorld(World *world, Shader *distortionShader, Shader *entitiesShader)
                 world->player.position.y - TILE_SIZE,
                 GREEN);
     EndShaderMode();
+
+    // Draw a health bar for the player
+    if(world->player.mortalEntity.health != world->player.mortalEntity.initialHealth)
+    {
+        DrawRectangle(world->player.position.x -12, world->player.position.y + TILE_SIZE * 1.2f -2, 54, 10, BLACK);
+        DrawRectangle(world->player.position.x -10, world->player.position.y + TILE_SIZE * 1.2f, 50, 6, RED);
+        DrawRectangle(world->player.position.x -10, world->player.position.y + TILE_SIZE * 1.2f, 50 * world->player.mortalEntity.health / world->player.mortalEntity.initialHealth, 6, GREEN);
+    }
 
 #ifdef _DEBUG
     Vector2 playerTilePos = GetTilePosition(world->player.position);
@@ -578,9 +586,41 @@ void HandleInteractionWithElementals(World *world)
     }
 }
 
+void UpdatePlayerHealth(World *world, float deltaTime)
+{
+    if (world->player.mortalEntity.isDead)
+        return;
+
+    world->player.mortalEntity.nextHealthCheck -= deltaTime;
+    if (world->player.mortalEntity.nextHealthCheck <= 0.0f)
+    {
+        
+        world->player.mortalEntity.nextHealthCheck = world->player.mortalEntity.checkRate;
+        // if the player is on a non grass tile, decrease health
+        // else increase health
+        if (world->tileTypes[static_cast<int>(world->player.position.y / TILE_SIZE)][static_cast<int>(world->player.position.x / TILE_SIZE)] != TileType::Grass)
+        {
+            world->player.mortalEntity.health -= world->player.mortalEntity.damageRate;
+        }
+        else
+        {
+            world->player.mortalEntity.health += world->player.mortalEntity.damageRate;
+        }
+
+        if (world->player.mortalEntity.health <= 0.0f)
+        {
+            world->player.mortalEntity.isDead = true;
+        }
+        else if (world->player.mortalEntity.health > world->player.mortalEntity.initialHealth)
+        {
+            world->player.mortalEntity.health = world->player.mortalEntity.initialHealth;
+        }
+    }
+}
+
 void UpdatePlayer(World *world, float deltaTime)
 {
-    if (world->player.status == PlayerStatus::Dead ||
+    if (world->player.mortalEntity.isDead ||
         world->player.status == PlayerStatus::Idle)
         return;
 
@@ -612,9 +652,11 @@ void UpdatePlayer(World *world, float deltaTime)
     }
 
     float movementSpeed = world->player.speed * deltaTime;
+    
     Vector2 newPositionX = {
         world->player.position.x + directionX * movementSpeed,
         world->player.position.y};
+
     Vector2 newPositionY = {
         world->player.position.x,
         world->player.position.y + directionY * movementSpeed};
@@ -639,6 +681,8 @@ void UpdatePlayer(World *world, float deltaTime)
     {
         HandleInteractionWithElementals(world);
     }
+
+    UpdatePlayerHealth(world, deltaTime);
 }
 
 void UpdateCamera(World *world, float deltaTime)
