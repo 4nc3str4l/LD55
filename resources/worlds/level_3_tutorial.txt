@@ -1,9 +1,0 @@
-# Comments are accepted in this type of format
-# This is a ui text
-[u, 400, 120] This is an <color=255,0,0,255>fire</color> elemental </color>
-[u, 250, 160] Elementals can be <color=0,255,155,255> usefull </color> if you know how to use them.
-
-
-# This is a world text
-[w, 200, 180] <color=0,255,155,255>[SPACE]</color> to grab elementals
-

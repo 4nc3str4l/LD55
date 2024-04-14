@@ -1,9 +1,0 @@
-# Comments are accepted in this type of format
-# This is a ui text
-[u, 400, 120] Here is his friend ICE elemental </color>
-[u, 250, 160] Experiment with them so you understand their <color=0,255,155,255>NATURE</color>
-
-
-# This is a world text
-[w, 200, 180] <color=0,255,155,255>[SPACE]</color> to grab elementals
-

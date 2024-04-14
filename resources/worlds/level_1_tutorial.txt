@@ -1,8 +1,0 @@
-# Comments are accepted in this type of format
-# This is a ui text
-[u, 250, 120] <color=0,255,155,255>GOAL</color> all tiles should be <color=0,255,155,255>GREEN to summon spring</color>
-[u, 250, 160] Place the <color=0,255,155,255>spring staff</color> in the <color=233,178,86,255>dry</color> and <color=240,240,240,255>ice</color> zones
-
-# This is a world text
-[w, 100, 200] Move with <color=0,255,155,255>WASD</color> or use <color=0,255,155,255>ARROW KEYS</color>
-[w, 100, 250] <color=0,255,155,255>[SPACE]</color> to <color=0,255,155,255>GRAB/RELEASE</color> objects or elementals.

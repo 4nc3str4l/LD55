@@ -1,6 +1,0 @@
-# Comments are accepted in this type of format
-# This is a ui text
-[w, 150, -50] Keep away but not <color=0,255,155,255>TOO MUCH</color>
-
-[w, 120, 280] Press <color=255,0,0,255> [R] </color> to restart when if you are blocked
-

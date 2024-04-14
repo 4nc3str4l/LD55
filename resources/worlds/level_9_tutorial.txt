@@ -1,4 +1,0 @@
-# Comments are accepted in this type of format
-# This is a ui text
-[w, 5, -50] Grab a staff and use your <color=0,255,0,255>mouse!</color>
-[w, 45, 270] Now you are in <color=0,255,0,255>Control</color>

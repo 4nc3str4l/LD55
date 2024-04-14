@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ludum Dare 55 - Spring Must Come</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #000000, #004400); /* Gradient from black to green */
+            color: white;
+            font-family: 'Press Start 2P', cursive;
+        }
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        canvas {
+            background-color: black;
+        }
+        #fullscreen-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #666;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        #instructions {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div id="game-container">
+    <canvas id="canvas"></canvas>
+    <div id="instructions">
+        <p>WASD to move, SPACE to grab/release stuff (elementals, totem)</p>
+        <p>Game made by Cristian Muriel in 48 hours for Ludum Dare 55</p>
+        <p>Created with love in C++ using Raylib & Emscripten</p>
+        <p><a href="https://github.com/4nc3str4l/LD55" target="_blank">GitHub Repository</a></p>
+    </div>
+</div>
+<script>
+    var Module = {
+        canvas: document.getElementById('canvas')
+    };
+
+
+    // Load the game script
+    var script = document.createElement('script');
+    script.src = 'game.js';
+    document.body.appendChild(script);
+</script>
+</body>
+</html>

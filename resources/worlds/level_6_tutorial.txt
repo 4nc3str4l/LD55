@@ -1,8 +1,0 @@
-# Comments are accepted in this type of format
-# This is a ui text
-[u, 380, 120] Not too <color=233,178,86,255>DRY</color> not to <color=0,0,200,255>COLD</color>
-[u, 240, 150] sometimes there are things that cannot be <color=255,0,0,255>UNDONE</color>...
-
-
-[w, 120, 220] Press <color=255,0,0,255> [R] </color> to restart when you are blocked
-

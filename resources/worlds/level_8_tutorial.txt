@@ -1,5 +1,0 @@
-# Comments are accepted in this type of format
-# This is a ui text
-[w, 380, -80] Problems can be bigger! (as maps)
-
-
