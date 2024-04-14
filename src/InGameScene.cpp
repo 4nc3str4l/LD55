@@ -31,12 +31,32 @@ void InGameScene::DrawStartingUI()
     EndShaderMode();
     DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Fade(BLACK, 0.9f));
 
-    float richTextSize = MeasureText("Press [Enter] to summon the spring guardian", 20);
-    DrawRichText("Press <color=0,255,155,255> [Enter] </color> to summon the spring guardian", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2, 20, WHITE);
+    // Render the level in big
+    // Get the color 0, 255, 155, 255
+    float levelTextSize = MeasureText(FormatText("Level %i", world->currentLevel).c_str(), 40);
+    DrawRichText(FormatText("Level %i", world->currentLevel).c_str(), SCREEN_WIDTH / 2 - levelTextSize / 2, 150, 40, WHITE);
 
-    // Offer the option to return to the main menu
-    richTextSize = MeasureText("Press [M] to return to the main menu", 20);
-    DrawRichText("Press <color=150,0,0,255> [M] </color> to return to the main menu", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 60, 20, WHITE);
+    auto color = Color{0, 255, 155, 255};
+    auto name = GetLevelName(world->currentLevel);
+    float levelNameSize = MeasureText(name.c_str(), 15);
+    DrawRichText(name.c_str(), SCREEN_WIDTH / 2 - levelNameSize / 2, 200, 15, color);
+
+    float richTextSize = MeasureText("Press [Enter] to start the game", 22);
+    DrawRichText("Press <color=0,255,155,255> [Enter] </color> to start the game", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 10, 22, WHITE);
+
+    if (currentLevel < registeredWorlds.size())
+    {
+        richTextSize = MeasureText("Press [N] to jump to the next level", 20);
+        DrawRichText("Press <color=0,255,155,255> [N] </color> to jump to the next level", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 110, 20, WHITE);
+    }
+
+    if (currentLevel > 1)
+    {
+        richTextSize = MeasureText("Press [L] for previous level", 20);
+        DrawRichText("Press <color=0,255,155,255> [L] </color> for previous level", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 150, 20, WHITE);
+    }
+
+    DrawRichText("Press <color=150,0,0,255> [M] </color> Main Menu", 10, SCREEN_HEIGHT - 40, 20, WHITE);
 
     EnableVolumeOptions(true);
 }
@@ -53,6 +73,25 @@ void InGameScene::UpdateStarting(float delta)
     if (IsKeyDown(KEY_M))
     {
         SceneManager::GetInstance().ChangeScene("Splash");
+    }
+
+    if (IsKeyReleased(KEY_N) && currentLevel < registeredWorlds.size())
+    {
+        currentLevel++;
+        DeleteWorld(world);
+        world = GetWorld(currentLevel);
+        gameState = GameState::STARTING;
+        SoundManager::PlaySound(SFX_GRASS, 0.5f, 0.1f);
+    }
+
+    if (IsKeyReleased(KEY_L) && currentLevel > 1)
+    {
+        currentLevel--;
+        DeleteWorld(world);
+        world = GetWorld(currentLevel);
+        gameState = GameState::STARTING;
+
+        SoundManager::PlaySound(SFX_GRASS, 0.5f, 0.1f);
     }
 }
 
@@ -90,7 +129,7 @@ void InGameScene::UpdatePlaying(float deltaTime)
         SoundManager::PlayMusic(SoundManager::titleMusic, 0.1f);
     }
 
-    if(IsKeyDown(KEY_R))
+    if (IsKeyDown(KEY_R))
     {
         DeleteWorld(world);
         world = GetWorld(currentLevel);
@@ -125,9 +164,7 @@ void InGameScene::DrawGameOverUI()
     richTextSize = MeasureText("Press [R] if it is NOT OVER yet!", 20);
     DrawRichText("Press <color=0,255,155,255> [R] </color> if it is <color=0,255,155,255>NOT OVER</color> yet!", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 60, 20, WHITE);
 
-    richTextSize = MeasureText("Press [M] to return to the main menu", 20);
-    DrawRichText("Press <color=150,0,0,255> [M] </color> to return to the main menu", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 120, 20, WHITE);
-
+    DrawRichText("Press <color=150,0,0,255> [M] </color> Main Menu", 10, SCREEN_HEIGHT - 40, 20, WHITE);
 
     EnableVolumeOptions(true);
 }
@@ -158,8 +195,8 @@ void InGameScene::DrawVictoryUI()
     DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Fade(GREEN, 0.1f));
 
     bool gameComplete = currentLevel >= registeredWorlds.size();
-    
-    if(!gameComplete)
+
+    if (!gameComplete)
     {
         float victoryTextSize = MeasureText("Victory!", 40);
         DrawRichText("<color=0,255,155,255>Victory!</color>", SCREEN_WIDTH / 2 - victoryTextSize / 2, 150, 40, WHITE);
@@ -171,7 +208,6 @@ void InGameScene::DrawVictoryUI()
         float explaationSize = MeasureText("Spring HAS come... FOREVER!", 25);
         DrawRichText("Spring <color=0,255,155,255>HAS</color> come... <color=0,255,155,255>FOREVER</color>", SCREEN_WIDTH / 2 - explaationSize / 2, 150, 25, WHITE);
     }
-
 
     float richTextSize = 0;
 
@@ -188,8 +224,6 @@ void InGameScene::DrawVictoryUI()
 
         richTextSize = MeasureText("Thanks a lot for playing, it means the WORLD to ME...", 20);
         DrawRichText("Thanks a lot for playing, it means the <color=0, 255, 155, 255> WORLD</color> to<color=0,255,155,255> ME</color>...", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2, 20, WHITE);
-
-        
 
         richTextSize = MeasureText("Press [M] to return to the main menu", 20);
         DrawRichText("Press <color=150,0,0,255> [M] </color> to return to the main menu", SCREEN_WIDTH / 2 - richTextSize / 2, SCREEN_HEIGHT / 2 + 120, 20, WHITE);
@@ -343,4 +377,35 @@ void InGameScene::Unload()
     DeleteWorld(world);
     UnloadShader(distortionShader);
     UnloadShader(entitiesShader);
+}
+
+std::string InGameScene::GetLevelName(int level)
+{
+    switch (level)
+    {
+    case 1:
+        return "Baby Steps";
+    case 2:
+        return "Growing is Hard";
+    case 3:
+        return "Making Friends";
+    case 4:
+        return "3 is a Crowd";
+    case 5:
+        return "Balance...";
+    case 6:
+        return "Some things cannot be fixed";
+    case 7:
+        return "That feeling of being trapped";
+    case 8:
+        return "Bigger problems";
+    case 9:
+        return "Remote control";
+    case 10:
+        return "Enemies/Allies who knows...";
+    case 11:
+        return "Back to the roots";
+    default:
+        return "Missing level name";
+    }
 }

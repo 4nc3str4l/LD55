@@ -39,6 +39,8 @@ private:
     void RegisterWorld(int level);
     World* GetWorld(int level);
 
+    std::string GetLevelName(int level);
+
 private:
     World* world;
     Shader distortionShader;
