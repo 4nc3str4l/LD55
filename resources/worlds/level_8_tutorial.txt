@@ -1,5 +1,4 @@
 # Comments are accepted in this type of format
-# This is a ui text
-[w, 380, -80] Problems can be bigger! (as maps)
+[w, 140, -40] <color=255, 0, 0, 255>Problems</color> can be bigger! (as maps)
 
 
