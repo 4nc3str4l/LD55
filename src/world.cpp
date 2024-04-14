@@ -173,6 +173,7 @@ World *LoadWorld(int level,
     world->iceElementalCaptiveTexture = GetTextureFromPath("resources/ice_elemental_captive.png");
     world->blockTexture = GetTextureFromPath("resources/block.png");
 
+    int numBlocks = 0;
     for (int y = 0; y < world->height; y++)
     {
         for (int x = 0; x < world->width; x++)
@@ -193,12 +194,14 @@ World *LoadWorld(int level,
                 break;
             case 2:
                 world->tiles[y][x] = snow_color;
-                world->tileTypes[y][x] = TileType::Grass;
+                world->tileTypes[y][x] = TileType::Snow;
                 world->tileStates[y][x] = 1.0f;
                 break;
             case 3:
                 world->blocks.push_back({Vector2{x * TILE_SIZE, y * TILE_SIZE}});
                 world->tileTypes[y][x] = TileType::Block;
+                world->tileStates[y][x] = 0.5f;
+                numBlocks++;
                 break;
 
             default:
@@ -243,25 +246,9 @@ World *LoadWorld(int level,
         }
     }
 
+    std::cout << "Num blocks: " << numBlocks << std::endl;
+
     return world;
-}
-
-void RenderPhysics(const World *world)
-{
-    // Render the player's collision rectangle
-    Rectangle playerRect = {
-        world->player.position.x - HALF_TILE_SIZE,
-        world->player.position.y + 32 - HALF_TILE_SIZE,
-        TILE_SIZE,
-        TILE_SIZE / 2};
-    DrawRectangleRec(playerRect, Fade(PURPLE, 0.5)); // Semi-transparent purple for visibility
-
-    // Render blocks' collision rectangles
-    for (const auto &block : world->blocks)
-    {
-        Rectangle blockRect = {block.position.x, block.position.y, TILE_SIZE, TILE_SIZE};
-        DrawRectangleRec(blockRect, Fade(ORANGE, 0.5)); // Semi-transparent orange for visibility
-    }
 }
 
 void RenderWorld(World *world, Shader *distortionShader, Shader *entitiesShader)
@@ -350,7 +337,9 @@ void RenderWorld(World *world, Shader *distortionShader, Shader *entitiesShader)
 #ifdef _DEBUG
     Vector2 playerTilePos = GetTilePosition(world->player.position);
     DrawRectangle(playerTilePos.x * TILE_SIZE, playerTilePos.y * TILE_SIZE, TILE_SIZE, TILE_SIZE, BLACK);
+    DrawRectangle(GetPlayerCenter(world).x - 2, GetPlayerCenter(world).y - 2, 4, 4, RED);
 #endif
+
 
     for (const auto &tutorial : world->tutorialTexts)
     {
@@ -358,10 +347,6 @@ void RenderWorld(World *world, Shader *distortionShader, Shader *entitiesShader)
             continue;
         DrawRichText(tutorial.text.c_str(), static_cast<int>(tutorial.position.x), static_cast<int>(tutorial.position.y), 20, WHITE);
     }
-
-#ifdef _DEBUG
-    RenderPhysics(world);
-#endif
 
     FXManager::DrawEffectsInWorld();
 
@@ -482,8 +467,11 @@ void UpdateWorldState(World *world, float deltaTime)
                     continue;
                 }
 
-                float t = deltaTime * influence / (rangeDelta + 1e-6);
-                world->tileStates[y][x] = Lerp(current, targetState, t);
+                if (world->tileTypes[y][x] != TileType::Block)
+                {
+                    float t = deltaTime * influence / (rangeDelta + 1e-6);
+                    world->tileStates[y][x] = Lerp(current, targetState, t);
+                }
             }
         }
     }
@@ -503,6 +491,12 @@ void UpdateTileStates(World *world, float deltaTime)
             TileType currentType = world->tileTypes[y][x];
             TileType newType = currentType;
 
+            if (world->tileTypes[y][x] == TileType::Block)
+            {
+                numGrassTiles++;
+                continue;
+            }
+
             if (tileState <= dry_range.y)
             {
                 world->tiles[y][x] = dry_color;
@@ -519,7 +513,7 @@ void UpdateTileStates(World *world, float deltaTime)
                 newType = TileType::Snow;
             }
 
-            if (newType == TileType::Grass || newType == TileType::Block)
+            if (newType == TileType::Grass)
             {
                 numGrassTiles++;
             }
@@ -541,7 +535,7 @@ void UpdateTileStates(World *world, float deltaTime)
 
 bool IsCollidingWithBlocks(World *world, Vector2 proposedPosition)
 {
-    Rectangle playerRect = {proposedPosition.x - HALF_TILE_SIZE +10, proposedPosition.y + 32 - HALF_TILE_SIZE , TILE_SIZE -10, TILE_SIZE / 2 - 15};
+    Rectangle playerRect = {proposedPosition.x - HALF_TILE_SIZE + 10, proposedPosition.y + 32 - HALF_TILE_SIZE, TILE_SIZE - 10, TILE_SIZE / 2 - 15};
     for (auto &block : world->blocks)
     {
         Rectangle blockRect = {block.position.x, block.position.y, TILE_SIZE / 2, TILE_SIZE};
@@ -556,6 +550,7 @@ bool IsCollidingWithBlocks(World *world, Vector2 proposedPosition)
 void HandleInteractionWithElementals(World *world)
 {
 
+    auto playerCenter = GetPlayerCenter(world);
     if (world->player.status == PlayerStatus::Grabbing)
     {
         for (auto &elemental : world->elementals)
@@ -573,8 +568,8 @@ void HandleInteractionWithElementals(World *world)
                 elemental.timesUntilMovementIncrease = TIMES_INTIL_MOVEMENT_RADIUS_INCRESES;
                 elemental.ChoosenPosition = elemental.position;
 
-                elemental.position.x = world->player.position.x + 20;
-                elemental.position.y = world->player.position.y + 20;
+                elemental.position.x = playerCenter.x;
+                elemental.position.y = playerCenter.y;
                 break;
             }
         }
@@ -583,6 +578,7 @@ void HandleInteractionWithElementals(World *world)
 
     else
     {
+
         float closestDistance = std::numeric_limits<float>::max();
         Elemental *closestElemental = nullptr;
         for (auto &elemental : world->elementals)
@@ -591,8 +587,8 @@ void HandleInteractionWithElementals(World *world)
                 elemental.type != ElementalType::Ice &&
                 elemental.type != ElementalType::Spring)
                 continue;
-            float distance = Vector2Distance(world->player.position, elemental.position);
-            if (distance < TILE_SIZE * 2.5 && elemental.status == ElementalStatus::Moving)
+            float distance = Vector2Distance(playerCenter, elemental.position);
+            if (distance < TILE_SIZE * 1.5f && elemental.status == ElementalStatus::Moving)
             {
                 if (!closestElemental || distance < closestDistance)
                 {
@@ -625,10 +621,15 @@ void UpdatePlayerHealth(World *world, float deltaTime)
         // else increase health
 
         float lastHealth = world->player.mortalEntity.health;
-
-        if (world->tileTypes[static_cast<int>(world->player.position.y / TILE_SIZE)][static_cast<int>(world->player.position.x / TILE_SIZE)] != TileType::Grass)
+        auto playerCenter = GetPlayerCenter(world);
+        auto getPlayerTile = GetTilePosition(playerCenter);
+        TileType currentTile = world->tileTypes[getPlayerTile.y][getPlayerTile.x];
+        if (currentTile != TileType::Grass)
         {
-            world->player.mortalEntity.health -= world->player.mortalEntity.damageRate;
+            if (currentTile != TileType::Block)
+            {
+                world->player.mortalEntity.health -= world->player.mortalEntity.damageRate;
+            }
         }
         else
         {
@@ -856,7 +857,7 @@ void EmitParticlesAroundPlayer(World *w, Vector2 playerPosition, int numParticle
 
 void NotifyPlayerHealthChange(World *world, float lastHealth, float newHealth)
 {
-    Vector2 centeredPlayerPos = Vector2{world->player.position.x + 10, world->player.position.y};
+    Vector2 centeredPlayerPos = GetPlayerCenter(world);
     if (newHealth < lastHealth)
     {
         FXManager::AddFadeRect(Rectangle{0, 0, static_cast<float>(GetScreenWidth()), static_cast<float>(GetScreenHeight())}, RED, 0.025f, false);
@@ -869,4 +870,9 @@ void NotifyPlayerHealthChange(World *world, float lastHealth, float newHealth)
         EmitParticlesAroundPlayer(world, centeredPlayerPos, 10, 3.0f, GREEN, 0.7f, false);
         SoundManager::PlaySound(SFX_HEAL, 0.3f, 0.1f);
     }
+}
+
+Vector2 GetPlayerCenter(World *world)
+{
+    return Vector2{world->player.position.x + HALF_TILE_SIZE, world->player.position.y + HALF_TILE_SIZE};
 }

@@ -72,8 +72,8 @@ enum class PlayerStatus
     Count
 };
 
-struct MortalEntity 
-{    
+struct MortalEntity
+{
     float initialHealth = 100.0f;
     float health = 100.0f;
     float damageRate = 5.0f;
@@ -89,7 +89,6 @@ struct Player
     PlayerStatus status = PlayerStatus::Moving;
     MortalEntity mortalEntity = {100.0f, 100.0f, 5.0f, 0.0f, 2.0f, false};
 };
-
 
 struct Elemental
 {
@@ -170,3 +169,4 @@ void UpdateWorld(World *world, float deltaTime);
 Vector2 GetTilePosition(const Vector2 &position);
 void NotifyStateChange(World *world, Rectangle where, TileType from, TileType to);
 void NotifyPlayerHealthChange(World *world, float lastHealth, float newHealth);
+Vector2 GetPlayerCenter(World* world);

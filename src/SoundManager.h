@@ -31,7 +31,7 @@ public:
     static void PlaySound(const std::string &soundFile, float volume, float pitchVariance);
     static void Cleanup();
     static void PlayMusic(Music &music, float volume);
-     static void StopMusic();
+    static void StopMusic();
 };
 
 #endif // SOUND_MANAGER_H
