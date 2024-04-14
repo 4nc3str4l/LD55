@@ -163,6 +163,11 @@ World *LoadWorld(const std::string &worldPath,
 
     world->playerTexture = GetTextureFromPath(player_texture_path);
     world->groundTexture = GetTextureFromPath(ground_texture_path);
+    world->springStaffTexture = GetTextureFromPath("resources/spring_staff.png");
+    world->fireElementalTexture = GetTextureFromPath("resources/fire_elemental_free.png");
+    world->iceElementalTexture = GetTextureFromPath("resources/ice_elemental_free.png");
+    world->fireElementalCaptiveTexture = GetTextureFromPath("resources/fire_elemental_captive.png");
+    world->iceElementalCaptiveTexture = GetTextureFromPath("resources/ice_elemental_captive.png");
 
     for (int y = 0; y < world->height; y++)
     {
@@ -262,16 +267,7 @@ void RenderWorld(World *world, Shader *distortionShader, Shader *entitiesShader)
     {
         for (int x = 0; x < world->width; x++)
         {
-            // Calcula el ángulo de rotación basado en la posición
-            float rotation = ((x + y) % 4) * 90; // Esto rota las texturas en 0, 90, 180, o 270 grados
-
-            // Dibuja la textura con rotación
-            Rectangle sourceRec = {0, 0, TILE_SIZE, TILE_SIZE};                                                             // Región de la textura a dibujar
-            Rectangle destRec = {x * TILE_SIZE + TILE_SIZE / 2.0f, y * TILE_SIZE + TILE_SIZE / 2.0f, TILE_SIZE, TILE_SIZE}; // Destino y tamaño en pantalla
-            Vector2 originRec = {TILE_SIZE / 2.0f, TILE_SIZE / 2.0f};                                                       // Punto de origen para rotar
-
-            // Ajusta las posiciones y rota la textura
-            DrawTexturePro(world->groundTexture, sourceRec, destRec, originRec, rotation, world->tiles[y][x]);
+            DrawTexture(world->groundTexture, x * TILE_SIZE, y * TILE_SIZE, world->tiles[y][x]);
         }
     }
     for (int i = 0; i < world->width * world->height; i++)
@@ -279,15 +275,39 @@ void RenderWorld(World *world, Shader *distortionShader, Shader *entitiesShader)
         auto elemental = world->elementals[i];
         if (elemental.type == ElementalType::Fire)
         {
-            DrawRectangle(elemental.position.x - HALF_TILE_SIZE, elemental.position.y - HALF_TILE_SIZE, TILE_SIZE, TILE_SIZE, RED);
+            if (elemental.status == ElementalStatus::Grabbed)
+            {
+                DrawTexture(world->fireElementalCaptiveTexture, elemental.position.x - TILE_SIZE / 2, elemental.position.y - TILE_SIZE, WHITE);
+            }
+            else
+            {
+                BeginShaderMode(*entitiesShader);
+                Vector4 tintVector = {1, 1, 1, 1};
+                SetShaderValue(*entitiesShader, GetShaderLocation(*entitiesShader, "tint"), &tintVector, SHADER_UNIFORM_VEC4);
+
+                DrawTexture(world->fireElementalTexture, elemental.position.x - TILE_SIZE / 2, elemental.position.y - TILE_SIZE, WHITE);
+                EndShaderMode();
+            }
         }
         else if (elemental.type == ElementalType::Ice)
         {
-            DrawRectangle(elemental.position.x - HALF_TILE_SIZE, elemental.position.y - HALF_TILE_SIZE, TILE_SIZE, TILE_SIZE, BLUE);
+            if (elemental.status == ElementalStatus::Grabbed)
+            {
+                DrawTexture(world->iceElementalCaptiveTexture, elemental.position.x - TILE_SIZE / 2, elemental.position.y - TILE_SIZE, WHITE);
+            }
+            else
+            {
+                DrawTexture(world->iceElementalTexture, elemental.position.x - TILE_SIZE / 2, elemental.position.y - TILE_SIZE, WHITE);
+            }
         }
         else if (elemental.type == ElementalType::Spring)
         {
-            DrawRectangle(elemental.position.x - HALF_TILE_SIZE, elemental.position.y - HALF_TILE_SIZE, TILE_SIZE, TILE_SIZE, GREEN);
+            BeginShaderMode(*entitiesShader);
+            Vector4 tintVector = {
+                1, 1, 1, 1};
+            SetShaderValue(*entitiesShader, GetShaderLocation(*entitiesShader, "tint"), &tintVector, SHADER_UNIFORM_VEC4);
+            DrawTexture(world->springStaffTexture, elemental.position.x - TILE_SIZE / 2, elemental.position.y - TILE_SIZE, WHITE);
+            EndShaderMode();
         }
     }
 
@@ -373,7 +393,7 @@ void EmitParticlesFromElementals(float deltaTime, World *world)
                     Vector2 targetPos = {x * TILE_SIZE + TILE_SIZE / 2.0f, y * TILE_SIZE + TILE_SIZE / 2.0f};
                     Vector2 velocity = Vector2Subtract(targetPos, elemental.position);
                     velocity = Vector2Scale(Vector2Normalize(velocity), 50.0f * randomValue);
-                    Color color = (elemental.type == ElementalType::Fire) ? RED : (elemental.type == ElementalType::Ice) ? BLUE
+                    Color color = (elemental.type == ElementalType::Fire) ? RED : (elemental.type == ElementalType::Ice) ? WHITE
                                                                                                                          : GREEN;
                     color.a = 255 * randomValue;
                     world->particleSystem.Emit(elemental.position, velocity, 5.0f, color, 1.0f);
@@ -417,6 +437,12 @@ void UpdateWorldState(World *world, float deltaTime)
                 if (elemental.type != ElementalType::Spring && tileType == TileType::Grass)
                 {
                     influence *= 0.3f;
+                }
+
+                // Spring elementals can counteract the other elementals
+                if (elemental.type == ElementalType::Spring)
+                {
+                    influence *= 3.0f;
                 }
 
                 if (elemental.type == ElementalType::Fire)
@@ -536,11 +562,11 @@ void HandleInteractionWithElementals(World *world)
             float distance = Vector2Distance(world->player.position, elemental.position);
             if (distance < TILE_SIZE * 2.5 && elemental.status == ElementalStatus::Moving)
             {
-                if(!closestElemental || distance < closestDistance)
+                if (!closestElemental || distance < closestDistance)
                 {
                     closestElemental = &elemental;
                     closestDistance = distance;
-                } 
+                }
             }
         }
 
@@ -682,6 +708,14 @@ void DeleteWorld(World *world)
 {
     if (!world)
         return;
+
     UnloadTexture(world->playerTexture);
     UnloadTexture(world->groundTexture);
+    UnloadTexture(world->springStaffTexture);
+    UnloadTexture(world->fireElementalTexture);
+    UnloadTexture(world->iceElementalTexture);
+    UnloadTexture(world->fireElementalCaptiveTexture);
+    UnloadTexture(world->springStaffTexture);
+
+    delete world;
 }

@@ -119,6 +119,13 @@ struct World {
 
     Texture2D playerTexture{};
     Texture2D groundTexture{};
+    Texture2D springStaffTexture{};
+
+    Texture2D fireElementalTexture{};
+    Texture2D iceElementalTexture{};
+
+    Texture2D fireElementalCaptiveTexture{};
+    Texture2D iceElementalCaptiveTexture{};
 
     float elementalPower = 0.1f;
     int elementalRange = 4;
